@@ -1,0 +1,49 @@
+{% extends "subtitles/base.html" %}
+{% block content %}
+    {% load utils %}
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <h1>Confirmation</h1>
+                <form action="{% tenant_url 'mooclink.course.bulk.do' course_id=course.ext_id tenant=course.tenant %}"
+                      method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="{{ action }}">
+
+                    Please confirm the following action: {{ human_action|capfirst }}.
+
+                    {% if action == 'assign_persons' %}
+                        <h4 class="mt-3">User to be assigned</h4>
+                    {% endif %}
+                    <ul>
+                        {% if user_to_assign %}
+
+                            {% for user in user_to_assign %}
+                                <input type="hidden" name="persons" value="{{ user.pk }}">
+                                <li>{{ user.initials }} {{ user.get_full_name }}</li>
+                            {% endfor %}
+                        {% endif %}
+                    </ul>
+
+
+                    <h4 class="mt-3">The following Videos are affected</h4>
+                    <ul>
+                        {% for video in videos_to_transcript %}
+                            <li>{{ video }} (transcript)</li>
+                            <input type="hidden" name="transcripts" value="{{ video.pk }}">
+                        {% endfor %}
+                        {% for lang, video in videos_to_translate %}
+                            <li>{{ video }} (translation to {{ lang }})</li>
+                            <input type="hidden" name="translations" value="{{ lang.iso_code }}-{{ video.pk }}">
+                        {% endfor %}
+                    </ul>
+                    <div class="mt-3">
+                        <button type="submit" class="btn btn-danger btn-lg">Confirm</button>
+                        <a href="#" onclick="history.back()" class="btn btn-outline-secondary btn-lg">Abort</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

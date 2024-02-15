@@ -1,0 +1,75 @@
+# NOTE: This docker-compose.yml is meant to be deployed from Gitlab CI
+#
+# Variables will be replaces in CI pipeline with current values.
+
+version: '3.4'
+
+x-defaults: &defaults
+  restart: unless-stopped
+  image: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+  depends_on:
+    - postgres
+  env_file: .env
+  volumes:
+    - transpipe-static:/transpipe/static/
+    - transpipe-media:/transpipe/media/
+
+
+services:
+  postgres:
+    restart: unless-stopped
+    image: postgres:13.2
+    volumes:
+      - transpipe-postgres:/var/lib/postgresql/data
+
+
+  web:
+    <<: *defaults
+    ports:
+      - '8080:8080'
+
+  celery_beat:
+    <<: *defaults
+    entrypoint: celery -A pipeline
+    command: beat --loglevel=INFO
+    depends_on:
+      - rabbitmq
+      - postgres
+
+  celery_worker:
+    <<: *defaults
+    entrypoint: celery -A pipeline
+    command: worker --loglevel=INFO --concurrency=2
+    depends_on:
+      - rabbitmq
+      - postgres
+
+  rabbitmq:
+    image: rabbitmq:3.8-management
+    hostname: rabbitmq
+    volumes:
+      - transpipe-rabbitmq-log:/var/log/rabbitmq
+      - transpipe-rabbitmq-data:/var/lib/rabbitmq
+    ports:
+      - '127.0.0.1:5672:5672'
+      - '127.0.0.1:15672:15672'
+    environment:
+      - RABBITMQ_DEFAULT_USER=rabbit
+      - RABBITMQ_DEFAULT_PASS=rabbit
+    restart: unless-stopped
+
+volumes:
+  transpipe-postgres:
+    external: true
+  transpipe-media:
+    external: true
+  transpipe-static:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /var/www/transpipe/static
+  transpipe-rabbitmq-log:
+    external: true
+  transpipe-rabbitmq-data:
+    external: true

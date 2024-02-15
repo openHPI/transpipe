@@ -1,0 +1,426 @@
+[
+    {
+        "model": "subtitles.isolanguage",
+        "pk": "am",
+        "fields": {
+            "description": "Amharic",
+            "is_rtl": true
+        }
+    },
+    {
+        "model": "subtitles.isolanguage",
+        "pk": "ar",
+        "fields": {
+            "description": "Arabic",
+            "is_rtl": true
+        }
+    },
+    {
+        "model": "subtitles.isolanguage",
+        "pk": "bg",
+        "fields": {
+            "description": "Bulgarian",
+            "is_rtl": false
+        }
+    },
+    {
+        "model": "subtitles.isolanguage",
+        "pk": "bn",
+        "fields": {
+            "description": "Bengali",
+            "is_rtl": false
+        }
+    },
+    {
+        "model": "subtitles.isolanguage",
+        "pk": "cn",
+        "fields": {
+            "description": "Chinese",
+            "is_rtl": false
+        }
+    },
+    {
+        "model": "subtitles.isolanguage",
+        "pk": "cs",
+        "fields": {
+            "description": "Czech",
+            "is_rtl": false
+        }
+    },
+    {
+        "model": "subtitles.isolanguage",
+        "pk": "de",
+        "fields": {
+            "description": "German",
+            "is_rtl": false
+        }
+    },
+    {
+        "model": "subtitles.isolanguage",
+        "pk": "el",
+        "fields": {
+            "description": "Greek",
+            "is_rtl": false
+        }
+    },
+    {
+        "model": "subtitles.isolanguage",
+        "pk": "en",
+        "fields": {
+            "description": "English",
+            "is_rtl": false
+        }
+    },
+    {
+        "model": "subtitles.isolanguage",
+        "pk": "es",
+        "fields": {
+            "description": "Spanish",
+            "is_rtl": false
+        }
+    },
+    {
+        "model": "subtitles.isolanguage",
+        "pk": "fa",
+        "fields": {
+            "description": "Farsi",
+            "is_rtl": false
+        }
+    },
+    {
+        "model": "subtitles.isolanguage",
+        "pk": "fa-AF",
+        "fields": {
+            "description": "Dari",
+            "is_rtl": false
+        }
+    },
+    {
+        "model": "subtitles.isolanguage",
+        "pk": "fr",
+        "fields": {
+            "description": "French",
+            "is_rtl": false
+        }
+    },
+    {
+        "model": "subtitles.isolanguage",
+        "pk": "ha",
+        "fields": {
+            "description": "Hausa",
+            "is_rtl": false
+        }
+    },
+    {
+        "model": "subtitles.isolanguage",
+        "pk": "hi",
+        "fields": {
+            "description": "Hindi",
+            "is_rtl": false
+        }
+    },
+    {
+        "model": "subtitles.isolanguage",
+        "pk": "hu",
+        "fields": {
+            "description": "Hungarian",
+            "is_rtl": false
+        }
+    },
+    {
+        "model": "subtitles.isolanguage",
+        "pk": "id",
+        "fields": {
+            "description": "Indonesian",
+            "is_rtl": false
+        }
+    },
+    {
+        "model": "subtitles.isolanguage",
+        "pk": "ig",
+        "fields": {
+            "description": "Igbo",
+            "is_rtl": false
+        }
+    },
+    {
+        "model": "subtitles.isolanguage",
+        "pk": "it",
+        "fields": {
+            "description": "Italian",
+            "is_rtl": false
+        }
+    },
+    {
+        "model": "subtitles.isolanguage",
+        "pk": "ja",
+        "fields": {
+            "description": "Japanese",
+            "is_rtl": false
+        }
+    },
+    {
+        "model": "subtitles.isolanguage",
+        "pk": "kaa",
+        "fields": {
+            "description": "Kara-Kalpak",
+            "is_rtl": false
+        }
+    },
+    {
+        "model": "subtitles.isolanguage",
+        "pk": "ko",
+        "fields": {
+            "description": "Korean",
+            "is_rtl": false
+        }
+    },
+    {
+        "model": "subtitles.isolanguage",
+        "pk": "kr",
+        "fields": {
+            "description": "Kanuri",
+            "is_rtl": false
+        }
+    },
+    {
+        "model": "subtitles.isolanguage",
+        "pk": "ku",
+        "fields": {
+            "description": "Kurdish",
+            "is_rtl": true
+        }
+    },
+    {
+        "model": "subtitles.isolanguage",
+        "pk": "ln",
+        "fields": {
+            "description": "Lingala",
+            "is_rtl": false
+        }
+    },
+    {
+        "model": "subtitles.isolanguage",
+        "pk": "mg",
+        "fields": {
+            "description": "Malagasy",
+            "is_rtl": false
+        }
+    },
+    {
+        "model": "subtitles.isolanguage",
+        "pk": "mk",
+        "fields": {
+            "description": "Macedonian",
+            "is_rtl": false
+        }
+    },
+    {
+        "model": "subtitles.isolanguage",
+        "pk": "mn",
+        "fields": {
+            "description": "Mongolian",
+            "is_rtl": false
+        }
+    },
+    {
+        "model": "subtitles.isolanguage",
+        "pk": "ne",
+        "fields": {
+            "description": "Nepali",
+            "is_rtl": false
+        }
+    },
+    {
+        "model": "subtitles.isolanguage",
+        "pk": "nl",
+        "fields": {
+            "description": "Dutch",
+            "is_rtl": false
+        }
+    },
+    {
+        "model": "subtitles.isolanguage",
+        "pk": "om",
+        "fields": {
+            "description": "Oromo",
+            "is_rtl": false
+        }
+    },
+    {
+        "model": "subtitles.isolanguage",
+        "pk": "or",
+        "fields": {
+            "description": "Oriya",
+            "is_rtl": false
+        }
+    },
+    {
+        "model": "subtitles.isolanguage",
+        "pk": "pa",
+        "fields": {
+            "description": "Panjabi",
+            "is_rtl": false
+        }
+    },
+    {
+        "model": "subtitles.isolanguage",
+        "pk": "pl",
+        "fields": {
+            "description": "Polish",
+            "is_rtl": false
+        }
+    },
+    {
+        "model": "subtitles.isolanguage",
+        "pk": "ps",
+        "fields": {
+            "description": "Pashto",
+            "is_rtl": false
+        }
+    },
+    {
+        "model": "subtitles.isolanguage",
+        "pk": "pt",
+        "fields": {
+            "description": "Portugese",
+            "is_rtl": false
+        }
+    },
+    {
+        "model": "subtitles.isolanguage",
+        "pk": "pt-BR",
+        "fields": {
+            "description": "Brazilian portuguese",
+            "is_rtl": false
+        }
+    },
+    {
+        "model": "subtitles.isolanguage",
+        "pk": "ru",
+        "fields": {
+            "description": "Russian",
+            "is_rtl": false
+        }
+    },
+    {
+        "model": "subtitles.isolanguage",
+        "pk": "si",
+        "fields": {
+            "description": "Sinhalese",
+            "is_rtl": false
+        }
+    },
+    {
+        "model": "subtitles.isolanguage",
+        "pk": "so",
+        "fields": {
+            "description": "Somali",
+            "is_rtl": false
+        }
+    },
+    {
+        "model": "subtitles.isolanguage",
+        "pk": "sq",
+        "fields": {
+            "description": "Albanian",
+            "is_rtl": false
+        }
+    },
+    {
+        "model": "subtitles.isolanguage",
+        "pk": "sr",
+        "fields": {
+            "description": "Serbian",
+            "is_rtl": false
+        }
+    },
+    {
+        "model": "subtitles.isolanguage",
+        "pk": "sw",
+        "fields": {
+            "description": "Swahili",
+            "is_rtl": false
+        }
+    },
+    {
+        "model": "subtitles.isolanguage",
+        "pk": "ta",
+        "fields": {
+            "description": "Tamil",
+            "is_rtl": false
+        }
+    },
+    {
+        "model": "subtitles.isolanguage",
+        "pk": "tet",
+        "fields": {
+            "description": "Tetum",
+            "is_rtl": false
+        }
+    },
+    {
+        "model": "subtitles.isolanguage",
+        "pk": "th",
+        "fields": {
+            "description": "Thai",
+            "is_rtl": false
+        }
+    },
+    {
+        "model": "subtitles.isolanguage",
+        "pk": "tr",
+        "fields": {
+            "description": "Turkish",
+            "is_rtl": false
+        }
+    },
+    {
+        "model": "subtitles.isolanguage",
+        "pk": "ur",
+        "fields": {
+            "description": "Urdu",
+            "is_rtl": true
+        }
+    },
+    {
+        "model": "subtitles.isolanguage",
+        "pk": "uz",
+        "fields": {
+            "description": "Uzbek",
+            "is_rtl": false
+        }
+    },
+    {
+        "model": "subtitles.isolanguage",
+        "pk": "vi",
+        "fields": {
+            "description": "Vietnamese",
+            "is_rtl": false
+        }
+    },
+    {
+        "model": "subtitles.isolanguage",
+        "pk": "yo",
+        "fields": {
+            "description": "Yoruba",
+            "is_rtl": false
+        }
+    },
+    {
+        "model": "subtitles.isolanguage",
+        "pk": "zh",
+        "fields": {
+            "description": "Chinese",
+            "is_rtl": false
+        }
+    },
+    {
+        "model": "subtitles.isolanguage",
+        "pk": "zu",
+        "fields": {
+            "description": "Zulu",
+            "is_rtl": false
+        }
+    }
+]

@@ -1,0 +1,112 @@
+{% extends "subtitles/base.html" %}
+{% block content %}
+    {% load static %}
+    {% load utils %}
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col">
+                <h1>Tasks</h1>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <form action="{% url 'mooclink.todo.index' %}" method="get">
+                    <div class="row">
+
+                        <div class="col-2">
+                            <div class="form-group row">
+                                <label for="input-tenant" class="col-auto col-form-label">Tenant</label>
+
+                                <select class="form-control col-sm" name="tenant" id="input-tenant"
+                                        onchange="this.form.submit()">
+                                    <option value="">-- All Tenants --</option>
+                                    {% for t in selectable_tenants %}
+                                        <option value="{{ t.slug }}"
+                                                {% if request.GET.tenant == t.slug %}selected{% endif %}>{{ t.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-1">
+                            <div class="form-group row">
+                                <label for="input-status" class="col-auto col-form-label">Status</label>
+                                <select class="form-control col-sm" name="s" id="input-status"
+                                        onchange="this.form.submit()">
+                                    {% for k, t in selectable_status %}
+                                        <option value="{{ k }}"{% if request.GET.s == k %} selected{% endif %}>
+                                            {{ t }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="form-group row">
+                                <label for="input-status" class="col-auto col-form-label">Course</label>
+                                <select class="form-control col" name="course" id="input-status"
+                                        onchange="this.form.submit()">
+                                    <option value="">-- All Courses --</option>
+                                    {% for course in selectable_courses %}
+                                        <option value="{{ course.pk }}"{% if request.GET.course == course.pk|stringformat:"i" %} selected{% endif %}>
+                                            {{ course }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                <table class="table table-sm">
+                    <thead>
+                    <tr>
+                        <th>Course</th>
+                        <th>Video</th>
+                        <th>Task</th>
+                        <th>Date</th>
+                        <th>By</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% regroup assignments|dictsort:"course.title" by course as ass_list %}
+
+                    {% for course, course_assignments in ass_list %}
+                        <tr>
+                            <td colspan="5">
+                                <a href="{% url 'mooclink.course.overview' course.tenant.slug course.ext_id %}">
+                                    {{ course.title }}
+                                </a>
+                            </td>
+                        </tr>
+                        {% for row in course_assignments %}
+                            <tr>
+                                <td></td>
+                                <td>{{ row.video.title }}</td>
+                                <td class="table-{{ row.subtitle.color_code|get_color }}">
+                                    <a href="{% url 'mooclink.video.index' row.subtitle.tenant.slug row.course.ext_id row.video.ext_id %}?language={{ row.subtitle.language_id }}"
+                                       target="_blank">
+                                        {{ row.action }}
+                                    </a>
+                                </td>
+                                <td>
+                                    {{ row.assignment.notification_sent|date }}
+                                </td>
+                                <td>
+                                    {% if row.assignment.assigned_by %}
+                                        {{ row.assignment.assigned_by.get_full_name }}
+                                    {% else %}
+                                        n/a
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+{% endblock %}
+{% block additionaljs %}
+{% endblock %}

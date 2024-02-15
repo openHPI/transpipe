@@ -1,0 +1,44 @@
+<ul class="steps">
+    <li class="step {% if transcript.status == 'IN' %} step-active{% endif %}">
+        <div class="step-content">
+            <span class="step-circle">1</span>
+            <span class="step-text">In Progress</span>
+        </div>
+    </li>
+    <li class="step {% if transcript.status == 'AU' %} step-active{% endif %}">
+        <div class="step-content">
+            <span class="step-circle">2</span>
+            <span class="step-text">Auto<br>Generated</span>
+        </div>
+    </li>
+    <li class="step{% if transcript.status == 'ED' %} step-active{% endif %}">
+        <div class="step-content">
+            <span class="step-circle">3</span>
+            <span class="step-text">Edited</span>
+        </div>
+    </li>
+    <li class="step{% if transcript.status == 'WA' %} step-active{% endif %}">
+        <div class="step-content">
+            <span class="step-circle">4</span>
+            <span class="step-text">Waiting for Approval</span>
+        </div>
+    </li>
+    <li class="step {% if transcript.status == 'CH' %} step-active{% endif %}">
+        <div class="step-content">
+            <span class="step-circle">5</span>
+            <span class="step-text">Changes<br>Requested</span>
+        </div>
+    </li>
+    <li class="step {% if transcript.status == 'AP' %} step-active{% endif %}">
+        <div class="step-content">
+            <span class="step-circle">6</span>
+            <span class="step-text">Approved</span>
+        </div>
+    </li>
+    <li class="step {% if transcript.status == 'PU' %} step-active{% endif %}">
+        <div class="step-content">
+            <span class="step-circle">7</span>
+            <span class="step-text">Published</span>
+        </div>
+    </li>
+</ul>

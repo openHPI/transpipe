@@ -1,0 +1,9 @@
+Hello {{ user.get_full_name }},
+
+the {% if subtitle.is_transcript %}transcription{% else %}translation to {{ subtitle.language }}{% endif %} for the video {{ course.title }} / {{ video.title }} has finished.
+
+You can start working here: {{ url }}
+
+
+Best regards
+transpipe

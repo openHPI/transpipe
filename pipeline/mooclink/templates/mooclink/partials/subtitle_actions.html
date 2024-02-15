@@ -1,0 +1,26 @@
+{% if perms.subtitles.delete_subtitle %}
+    <button class="btn btn-outline-danger mr-1" type="submit" name="action" value="delete"
+            onclick="return confirm('Are you sure to delete the subtitle locally?');">
+        Delete
+    </button>
+{% endif %}
+{% if perms.subtitles.change_subtitle %}
+    <button class="btn btn-outline-secondary mr-1" type="submit" name="action" value="request_approval">
+        Request Approval
+    </button>
+{% endif %}
+{% if perms.subtitles.request_changes_subtitle %}
+    <button class="btn btn-outline-info mr-1" type="submit" name="action" value="request_changes">
+        Request changes
+    </button>
+{% endif %}
+{% if perms.subtitles.approve_subtitle %}
+    <button class="btn btn-outline-success mr-1" type="submit" name="action" value="approved">
+        Approve
+    </button>
+{% endif %}
+{% if perms.subtitles.publish_subtitle_to_xikolo %}
+    <button class="btn btn-outline-info mr-1" type="submit" name="action" value="publish">
+        Publish
+    </button>
+{% endif %}

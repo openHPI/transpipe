@@ -1,0 +1,633 @@
+{% extends "subtitles/base.html" %}
+{% block content %}
+{% load static %}
+{% load utils %}
+<link rel="stylesheet" href="{% static 'mooclink/css/bootstrap-steps.min.css' %}">
+<script src="{% static 'mooclink/js/plyr.js' %}"></script>
+<link rel="stylesheet" href="{% static 'mooclink/css/plyr.css' %}" />
+<link rel="stylesheet" href="{% static 'subtitles/css/mooclink.css' %}">
+
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col">
+            <h1>{{ course.title }}</h1>
+            <a href="{% tenant_url 'mooclink.course.overview' course_id=course.ext_id tenant=video.tenant %}" class="btn btn-secondary">Back</a>
+            <a href="{{ video.platform_link }}" class="btn btn-outline-primary">Back to {{ video.tenant.name }}</a>
+
+            <h2>{{ video.title }}</h2>
+        </div>
+    </div>
+    {% if video.is_workflow_in_progress %}
+        {% include "mooclink/partials/video_blocked_modal.html" %}
+        <script type="application/javascript">
+            $('#myModal').modal('show')
+        </script>
+    {% endif %}
+
+
+{% load utils %}
+
+{% if perms.subtitles.init_standalone_translation %}
+<div class="modal" id="standalone-translation" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Translate Subtitle</h5>
+
+            </div>
+            <div class="modal-body">
+                <p>Please select the languages the existing transcription (language {{ video.original_language }}) should be translated to</p>
+                    {% for lang in video.languages_of_course %}
+                        <div class="form-check">
+                            <input form="translation-do-action-form" type="checkbox" class="form-check-input" id="checkbox-{{ lang.iso_code }}" name="target-languages" value="{{ lang.iso_code }}">
+                            <label class="form-check-label" for="checkbox-{{ lang.iso_code }}">{{ lang}}</label>
+                        </div>
+                    {% endfor %}
+            </div>
+            <div class="modal-footer">
+                <button type="submit" name="action" value="translate_standalone" class="btn btn-primary" form="translation-do-action-form">Translate</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+    <div class="row pl-3">
+        <div class="col-3.5">
+            <h4>Video</h4>
+
+            <ul class="nav nav-tabs js-tabs">
+                {% if video.video_url_pip %}
+                <li class="nav-item">
+                    <a class="nav-link active js-tab" href="#" id="js-tabs-pip">PIP</a>
+                </li>
+                {% endif %}
+                {% if video.video_url_lecturer %}
+                <li class="nav-item">
+                    <a class="nav-link js-tab" href="#" id="js-tabs-lecturer">Lecturer</a>
+                </li>
+                {% endif %}
+                {% if video.video_url_slides %}
+                <li class="nav-item">
+                    <a class="nav-link js-tab" href="#" id="js-tabs-slides">Slides</a>
+                </li>
+                {% endif %}
+            </ul>
+            <div class="video-tabs">
+                {% if video.video_url_pip %}
+                <div class="video-player" style="width: 500px" id="js-video-player-pip">
+                    <video id="player-pip" playsinline controls data-poster="/path/to/poster.jpg">
+                        <source src="{{ video.video_url }}" type="video/mp4"/>
+                    </video>
+                </div>
+                {% endif %}
+                {% if video.video_url_lecturer %}
+                <div class="video-player d-none" style="width: 500px" id="js-video-player-lecturer">
+                    <video id="player-lecturer" playsinline controls data-poster="/path/to/poster.jpg">
+                        <source src="{{ video.video_url_lecturer }}" type="video/mp4"/>
+                    </video>
+                </div>
+                {% endif %}
+                {% if video.video_url_slides %}
+                <div class="video-player d-none" style="width: 500px" id="js-video-player-slides">
+                    <video id="player-slides" playsinline controls data-poster="/path/to/poster.jpg">
+                        <source src="{{ video.video_url_slides }}" type="video/mp4"/>
+                    </video>
+                </div>
+                {% endif %}
+            </div>
+            <input type="text" class="form-control mt-2 col-5" name="play" placeholder="mm:ss.mmm" id="js-seek-input">
+
+            <p class="font-weight-bold mt-4">Comments</p>
+            <form action="{% tenant_url 'mooclink.video.index' course_id=course.ext_id video_id=video.ext_id tenant=video.tenant %}"
+                  method="get">
+                {% if current_language %}
+                    <input type="hidden" name="language" value="{{ current_language.iso_code }}">
+                {% endif %}
+
+                <div class="input-group vertical-group-top">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text vertical-group-top" id="basic-addon1">Select / Filter</span>
+                    </div>
+                    <select class="custom-select vertical-group-top" name="comment_language" onchange="this.form.submit()">
+                        {% for lang in selectable_comment_languages %}
+                            <option value="{{ lang.iso_code }}"
+                                    {% if comment_language|default:video.original_language == lang %}
+                                    selected{% endif %}>
+                                {{ lang }}{% if lang == video.original_language %}
+                                    (Transcript){% endif %}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </form>
+            {% if perms.subtitles.add_comment %}
+            <form action="{% tenant_url 'mooclink.video.add_comment' course_id=course.ext_id video_id=video.ext_id tenant=video.tenant %}" method="post">
+                {% csrf_token %}
+                <input type="hidden" name="translation_language" value="{% if current_language %}{{ current_language.iso_code }}{% endif %}">
+                <input type="hidden" name="comment_language" value="{{ comment_language.iso_code }}">
+                <textarea class="vertical-group-bottom form-control col-12 mt-2" placeholder="Add a comment" name="text"></textarea>
+                <button class="btn btn-primary mt-2" type="submit">Comment</button>
+            </form>
+            {% endif %}
+
+            {% if perms.subtitles.view_comment %}
+            {% for comment in comments %}
+            <div class="card mt-2 col-12 comment">
+                <div class="card-body">
+                    <p class="card-text float-right"><small class="text-muted">{{ comment.for_language|default_if_none:"n/a" }}</small></p>
+                    <p class="card-text">{{ comment.content }}</p>
+                    <p class="card-text"><small class="text-muted">{{ comment.created_by }} {{ comment.created|date:'d.m.Y H:i' }}</small></p>
+                </div>
+            </div>
+            {% endfor %}
+            {% endif %}
+        </div>
+
+        <div class="col">
+            <form action="{% tenant_url 'mooclink.video.save_transcript' course_id=course.ext_id video_id=video.ext_id tenant=video.tenant %}{% if request.GET.language %}?language={{ request.GET.language }}{% endif %}" method="post"
+                  id="transcript-form">
+                <input type="hidden" name="subtitle-id" value="{{ transcript.pk }}">
+                <input type="hidden" name="is-transcript" value="t">
+                <h4>Transcription</h4>
+                <select class="form-control vertical-group-top" id="selected-language" disabled>
+                    <option selected>{{ video.original_language }}</option>
+                </select>
+                <textarea id="transcript-textarea" data-error-el="errors-transcript-vtt" data-usage="transcript"
+                          class="vertical-group-bottom form-control text-monospace mt-2{% if transcript.language.is_rtl %} rtl{% endif %}"
+                          name="transcription-content" style="height: 600px">{{ transcript.latest_content }}</textarea>
+                <ol id="errors-transcript-vtt"></ol>
+                <div class="form-group">
+                    <input type="file" id="transcription-file">
+                    <small id="emailHelp" class="form-text text-muted">Select and read VTT file</small>
+                </div>
+                {% csrf_token %}
+                {% if perms.subtitles.change_subtitle %}
+                <button class="btn btn-primary mt-2" type="submit" name="action" value="save_new_transcript">
+                    Save new transcript version
+                </button>
+                {% endif %}
+                <button class="btn btn-secondary mt-2" type="reset"
+                        onclick="return confirm('Are you sure to reset the changes?');">Revert Changes
+                </button>
+
+                <span class="custom-control custom-checkbox">
+                    <input type="checkbox" class="custom-control-input"  name="is_automatic" value="true" id="is-automatic-transctipt"
+                        {% if transcript.is_automatic %}checked{% endif %}>
+                    <label class="custom-control-label" for="is-automatic-transctipt">Mark Transcript as Automatic</label>
+                </span>
+            </form>
+            <form action="{% tenant_url 'mooclink.video.fetch_subtitle_from_xikolo' course_id=course.id video_id=video.id tenant=video.tenant %}" method="post" id="fetch-trans-form">
+                {% csrf_token %}
+                <input type="hidden" name="video-id" value="{{ video.pk }}">
+                <input type="hidden" name="language" value="{{ video.original_language.iso_code }}">
+            </form>
+
+            {% if perms.subtitles.fetch_subtitle %}
+                <button form="fetch-trans-form" class="btn btn-primary mt-2" type="submit" name="action"
+                        value="fetch_from_xikolo" onclick="return confirm('Are you sure to reset the changes?');">
+                    Fetch published version from {{ video.tenant.name }}
+                </button>
+            {% endif %}
+            {% if perms.subtitles.start_workflow_subtitle %}
+                <button form="translation-do-action-form" class="btn btn-primary mt-2" type="submit" name="action"
+                        value="restart_workflow" onclick="return confirm('Starting the workflow involves costs');"{% if course.only_manual_provider %} disabled{% endif %}>
+                    Restart Workflow
+                </button>
+            {% endif %}
+            {% if perms.subtitles.init_standalone_translation %}
+            <button class="btn btn-primary mt-2" type="button"  data-toggle="modal" data-target="#standalone-translation">
+                Translate Standalone
+            </button>
+            {% endif %}
+
+            <form id="translation-do-action-form"
+                  action="{% tenant_url 'mooclink.video.do_action' course_id=course.ext_id video_id=video.ext_id tenant=video.tenant %}" method="post">
+                {% csrf_token %}
+                <input type="hidden" name="subtitle-id" value="{{ transcript.pk }}">
+                <input type="hidden" name="video-id" value="{{ video.pk }}">
+                <input type="hidden" name="is-transcript" value="t">
+                <p class="font-weight-bold mt-4">Actions</p>
+                <div class="row pt-1 pl-3">
+                    {% include "mooclink/partials/subtitle_actions.html" %}
+                </div>
+            </form>
+
+            <p class="font-weight-bold mt-4">Workflow Status</p>
+            <div class="row pb-2">
+                {% include 'mooclink/partials/progress_steps.html' with transcript=transcript only %}
+            </div>
+        </div>
+
+        <div class="col">
+            <h4>Translation</h4>
+            <form action="" method="get">
+                <select class="form-control vertical-group-top" id="selected-language" name="language" onchange="this.form.submit()">
+
+                    <optgroup label="Existing Languages">
+                        <option value="">-- Please Select --</option>
+                        {% for lang in video.existing_languages %}
+                        <option value="{{ lang.iso_code }}" {% if lang.iso_code == selected_iso %} selected{% endif %}>{{ lang }}
+                        </option>
+                        {% endfor %}
+                    </optgroup>
+                    <optgroup label="Add translation for">
+                        {% for lang in video.missing_languages %}
+                        <option value="{{ lang.iso_code }}" {% if lang.iso_code == selected_iso %} selected{% endif %}>{{ lang }}
+                        </option>
+                        {% endfor %}
+                    </optgroup>
+                </select>
+            </form>
+
+            <form action="{% tenant_url 'mooclink.video.save_transcript' course_id=course.ext_id video_id=video.ext_id tenant=video.tenant %}{% if request.GET.language %}?language={{ request.GET.language }}{% endif %}" method="post">
+            {% csrf_token %}
+                <fieldset{% if not selected_iso %} disabled{% endif %}>
+                <input type="hidden" name="language" value="{{ selected_iso }}">
+                <input type="hidden" name="subtitle-id" value="{{ selected_translation.pk }}">
+                <textarea id="translation-textarea" data-usage="translation" data-error-el="errors-translation-vtt"
+                          class="vertical-group-bottom form-control text-monospace mt-2{% if selected_translation.language.is_rtl %} rtl{% endif %}" {% if not selected_iso %}readonly{% endif %}
+                          name="transcription-content"
+                          style="height: 600px">{% if not selected_iso %}Please select a language for translation{% else %}{{ selected_translation.latest_content }}{% endif %}</textarea>
+                    <ol id="errors-translation-vtt"></ol>
+                    <div class="form-group">
+                        <input type="file" id="translation-file">
+                        <small id="emailHelp" class="form-text text-muted">Select and read VTT file</small>
+                    </div>
+                    {% if perms.subtitles.change_subtitle %}
+                    <button class="btn btn-primary mt-2" type="submit">Save new translated version</button>
+                    {% endif %}
+                    <button class="btn btn-secondary mt-2" type="reset"
+                            onclick="return confirm('Are you sure to reset the changes?');">Revert Changes
+                    </button>
+
+                    <span class="custom-control custom-checkbox">
+                        <input type="checkbox" class="custom-control-input"  name="is_automatic" value="true" id="is-automatic-translation"
+                            {% if transcript.is_automatic %}checked{% endif %}>
+                        <label class="custom-control-label" for="is-automatic-translation">Mark Translation as Automatic</label>
+                    </span>
+                </fieldset>
+            </form>
+
+            <form action="{% tenant_url 'mooclink.video.fetch_subtitle_from_xikolo' course_id=course.id video_id=video.id tenant=video.tenant %}" method="post" id="fetch-transcript-form">
+                {% csrf_token %}
+                <input type="hidden" name="video-id" value="{{ video.pk }}">
+                <input type="hidden" name="language" value="{{ selected_iso }}">
+            </form>
+
+            <fieldset{% if not selected_iso %} disabled{% endif %}>
+            {% if perms.subtitles.fetch_subtitle %}
+            <button form="fetch-transcript-form" class="btn btn-primary mt-2" type="submit" name="action"
+                    value="fetch_from_xikolo" onclick="return confirm('Are you sure to reset the changes?');">
+                Fetch published version from {{ video.tenant.name }}
+            </button>
+            {% endif %}
+            {% if perms.subtitles.start_workflow_subtitle %}
+            <button form="transcript-do-action-form" class="btn btn-primary mt-2" type="submit" name="action"
+                    value="restart_workflow" onclick="return confirm('Starting the workflow involves costs');"{% if course.only_manual_provider %} disabled{% endif %}>
+                Restart Workflow
+            </button>
+            {% endif %}
+            </fieldset>
+
+            <form action="{% tenant_url 'mooclink.video.do_action' course_id=course.ext_id video_id=video.ext_id tenant=video.tenant %}" method="post" id="transcript-do-action-form">
+            {% csrf_token %}
+            <p class="font-weight-bold mt-4">Actions</p>
+                <fieldset{% if not selected_iso %} disabled{% endif %}>
+                    <input type="hidden" name="video-id" value="{{ video.pk }}">
+                    <input type="hidden" name="language" value="{{ selected_iso }}">
+                    <input type="hidden" name="subtitle-id" value="{% if selected_translation %}{{ selected_translation.pk }}{% endif %}">
+
+                    <div class="row pt-1 pl-3">
+                        {% include "mooclink/partials/subtitle_actions.html" %}
+                    </div>
+                </fieldset>
+            </form>
+
+            <p class="font-weight-bold mt-4">Workflow Status</p>
+            <div class="row pb-2">
+                {% include 'mooclink/partials/progress_steps.html' with transcript=selected_translation %}
+            </div>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}
+{% block additionaljs %}
+    <style type="text/css" media="screen">
+    #transcription-editor {
+        height: 100px;
+        width: 100px;
+    }
+    </style>
+    <script src="{% static 'mooclink/js/parser.js' %}"></script>
+    <script type="application/javascript">
+        function goto_line(line_number, col_number, editor) {
+            let abcabc = ace.edit(editor)
+            abcabc.scrollToLine(line_number, col_number || 0, true, true, function () {
+            })
+            abcabc.gotoLine(line_number, col_number || 0, true)
+
+            return false
+        }
+
+        let mode = 'subtitles/captions/descriptions'
+        let player_pip = player_lecturer = player_slides = null;
+
+        function gutter_clickhandler(e) {
+            let cursor_pos = e.editor.getCursorPosition()
+            console.log("row", cursor_pos)
+            let lines = e.editor.getSession().getLines(Math.max(cursor_pos.row - 3, 0), Math.min(cursor_pos.row + 4, e.editor.getSession().getLength()))
+            console.log("c", lines)
+
+            let line = e.editor.session.getLine(cursor_pos.row)
+            let re = /(\d\d):(\d\d):(\d\d).(\d\d\d) --> (\d\d:\d\d:\d\d.\d\d\d)/g
+            let res = re.exec(line)
+
+            if (res) {
+                let hours = parseInt(res[1])
+                let minutes = parseInt(res[2])
+                let seconds = parseInt(res[3])
+                let millis = parseInt(res[4])
+
+                const total_seconds = hours * 60 * 60 + minutes * 60 + seconds + millis / 1000.0
+                console.log("total_seconds", total_seconds)
+                get_current_player().currentTime = total_seconds
+            }
+        }
+        function init_ace(textarea_id){
+            let vvt_parser = new WebVTTParser()
+            let textarea = $(`#${textarea_id}`)
+            let error_el = $(`#${textarea.data('error-el')}`)
+
+            let edit_div = $('<div>', {
+                    position: 'absolute',
+                    width: '100%',
+                    height: textarea.height(),
+                    'class': textarea.attr('class'),
+                    id: 'editor-' + textarea.data('usage'),
+                }).insertBefore(textarea);
+
+            textarea.css('display', 'none');
+            let editor = ace.edit(edit_div[0])
+            editor.setOptions({
+                wrap: true,
+                rtl: textarea.hasClass('rtl')
+
+            })
+
+            textarea.closest('form').submit(function () {
+                textarea.val(editor.getSession().getValue());
+            })
+
+            editor.getSession().on('change', function () {
+                    let value = editor.getSession().getValue()
+                    textarea.val(value);
+                    let r = vvt_parser.parse(value, mode)
+
+                    editor.getSession().clearAnnotations()
+                    error_el.empty()
+
+
+                    if (r.errors) {
+                        let annotations = []
+
+                        r.errors.forEach(function (error) {
+                            error_el.append($(`<li><a href="#" onclick="goto_line(${error.line}, ${error.col || 1}, '${"editor-" + textarea.data('usage')}'); return false;">Line ${error.line}</a>: ${error.message}</li>`))
+
+                            annotations.push({
+                                row: error.line-1,
+                                column: error.col || 0,
+                                text: error.message,
+                                type: "error"
+                            })
+                        })
+                        editor.getSession().setAnnotations(annotations)
+                    }
+                });
+
+                editor.getSession().setValue(textarea.val());
+
+            return editor
+        }
+
+        $(document).ready(function () {
+            let transcript_editor = init_ace('transcript-textarea')
+            let translation_editor = null
+
+            transcript_editor.on("gutterclick", gutter_clickhandler);
+
+        abc = transcript_editor;
+
+            {% if selected_iso %}
+                translation_editor = init_ace('translation-textarea')
+            {% endif %}
+
+            $('#transcription-file').on('change', function (e) {
+                let file_reader = new FileReader()
+
+                file_reader.onload = function () {
+                    transcript_editor.getSession().setValue(file_reader.result)
+                }
+                file_reader.readAsText($(this)[0].files[0])
+            })
+
+            $('#translation-file').on('change', function (e) {
+                let file_reader = new FileReader()
+
+                file_reader.onload = function () {
+                    translation_editor.getSession().setValue(file_reader.result)
+                }
+                file_reader.readAsText($(this)[0].files[0])
+            })
+        })
+        controls = `
+<div class="plyr__controls">
+    <div class="plyr__progress">
+        <input data-plyr="seek" type="range" min="0" max="100" step="0.01" value="0" aria-label="Seek">
+        <progress class="plyr__progress__buffer" min="0" max="100" value="0">% buffered</progress>
+        <span role="tooltip" class="plyr__tooltip">00:00</span>
+    </div>
+
+    <div class="plyr__customized-controls">
+        <div class="plyr__control-block">
+            <button type="button" class="plyr__control" data-plyr="rewind">
+                <svg role="presentation">
+                    <use xlink:href="#plyr-rewind"></use>
+                </svg>
+                <span class="plyr__tooltip" role="tooltip">Rewind {seektime} secs</span>
+            </button>
+            <button type="button" class="plyr__control" aria-label="Play, {title}" data-plyr="play">
+                <svg class="icon--pressed" role="presentation">
+                    <use xlink:href="#plyr-pause"></use>
+                </svg>
+                <svg class="icon--not-pressed" role="presentation">
+                    <use xlink:href="#plyr-play"></use>
+                </svg>
+                <span class="label--pressed plyr__tooltip" role="tooltip">Pause</span>
+                <span class="label--not-pressed plyr__tooltip" role="tooltip">Play</span>
+            </button>
+            <button type="button" class="plyr__control" data-plyr="fast-forward">
+                <svg role="presentation">
+                    <use xlink:href="#plyr-fast-forward"></use>
+                </svg>
+                <span class="plyr__tooltip" role="tooltip">Forward {seektime} secs</span>
+            </button>
+        </div>
+        <div class="plyr__time plyr__time--current" aria-label="Current time">00:00</div>
+
+        <div class="plyr__control-block">
+            <button type="button" class="plyr__control" aria-label="Mute" data-plyr="mute">
+                <svg class="icon--pressed" role="presentation">
+                    <use xlink:href="#plyr-muted"></use>
+                </svg>
+                <svg class="icon--not-pressed" role="presentation">
+                    <use xlink:href="#plyr-volume"></use>
+                </svg>
+                <span class="label--pressed plyr__tooltip" role="tooltip">Unmute</span>
+                <span class="label--not-pressed plyr__tooltip" role="tooltip">Mute</span>
+            </button>
+            <div class="plyr__volume">
+                <input data-plyr="volume" type="range" min="0" max="1" step="0.05" value="1" autocomplete="off"
+                       aria-label="Volume">
+            </div>
+        </div>
+    </div>
+</div>`;
+
+        player_pip = new Plyr('#player-pip', {
+            debug: true,
+            controls: controls,
+            invertTime: false,
+            hideControls: false,
+        });
+
+        player_lecturer = new Plyr('#player-lecturer', {
+            debug: true,
+            controls: controls,
+            invertTime: false,
+            hideControls: false,
+        });
+
+        player_slides = new Plyr('#player-slides', {
+            debug: true,
+            controls: controls,
+            invertTime: false,
+            hideControls: false,
+        });
+
+        let current_tab = 'pip'
+
+        function get_current_player() {
+            if (current_tab === 'pip') {
+                return player_pip
+            }
+
+            if (current_tab === 'lecturer') {
+                return player_lecturer
+            }
+
+            if (current_tab === 'slides') {
+                return player_slides
+            }
+        }
+
+        $("#js-seek-input").on("keyup", function (e) {
+            if (e.keyCode === 13) {
+                e.preventDefault();
+                $(this).blur()
+            }
+        })
+
+        $("#js-seek-input").on('blur', function (e) {
+            let re = /(\d\d):(\d\d).(\d\d\d)/g
+            let res = re.exec($(this).val())
+
+            console.log("--->", res)
+
+            if (res) {
+                $(this).removeClass('is-invalid')
+
+                let hours = 0
+                let minutes = parseInt(res[1])
+                let seconds = parseInt(res[2])
+                let millis = parseInt(res[3])
+
+                const total_seconds = hours * 60 * 60 + minutes * 60 + seconds + millis / 1000.0
+                console.log("total_seconds", total_seconds)
+                get_current_player().currentTime = total_seconds
+            }
+            else {
+                $(this).addClass('is-invalid')
+            }
+        })
+
+        $("#js-tabs-pip").on("click", function(e) {
+            e.preventDefault()
+
+            if (current_tab === 'pip') {
+                return
+            }
+
+            let last_player = get_current_player()
+
+            $(".js-tab").removeClass('active')
+            $(this).addClass("active");
+            current_tab = 'pip'
+
+            $("#js-video-player-lecturer").addClass("d-none")
+            $("#js-video-player-slides").addClass("d-none")
+            $("#js-video-player-pip").removeClass("d-none")
+
+            last_player.pause()
+            player_pip.currentTime = last_player.currentTime
+
+        })
+
+        $("#js-tabs-lecturer").on("click", function(e) {
+            e.preventDefault()
+
+            if (current_tab === 'lecturer') {
+                return
+            }
+            let last_player = get_current_player()
+
+
+            $(".js-tab").removeClass('active')
+            $(this).addClass("active");
+            current_tab = 'lecturer'
+
+            $("#js-video-player-pip").addClass("d-none")
+            $("#js-video-player-slides").addClass("d-none")
+            $("#js-video-player-lecturer").removeClass("d-none")
+
+            last_player.pause()
+            player_lecturer.currentTime = last_player.currentTime
+        })
+
+        $("#js-tabs-slides").on("click", function(e) {
+            e.preventDefault()
+
+            if (current_tab === 'slides') {
+                return
+            }
+            let last_player = get_current_player()
+
+
+            $(".js-tab").removeClass('active')
+            $(this).addClass("active");
+            current_tab = 'slides'
+
+            $("#js-video-player-pip").addClass("d-none")
+            $("#js-video-player-lecturer").addClass("d-none")
+            $("#js-video-player-slides").removeClass("d-none")
+
+            last_player.pause()
+            player_slides.currentTime = last_player.currentTime
+        })
+
+    </script>
+{% endblock %}

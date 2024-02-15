@@ -1,0 +1,39 @@
+{% extends "subtitles/base.html" %}
+
+{% block content %}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col col-12">
+                <h1>Profile {{ request.user.email }}</h1>
+
+                <h2>Tenants</h2>
+                {% for tenant in request.user.tenants.all %}
+                    Name: {{ tenant.name }} ({{ tenant.slug }})<br/>
+                {% endfor %}
+
+                <h2>Permissions</h2>
+                {% if request.user.is_superuser %}
+                    Superuser: true (all permissions implicitly granted)
+                {% endif %}
+                <h3>User-Permissions:</h3>
+                <ul>
+                    {% for p in user_permissions %}
+                        <li>{{ p }}</li>
+                    {% endfor %}
+                </ul>
+                <h3>Groups</h3>
+                <ul>
+                    {% for g in groups %}
+                        <li>{{ g }}</li>
+                    {% endfor %}
+                </ul>
+                <h3>Group-Permissions</h3>
+                <ul>
+                    {% for p in group_permissions %}
+                        <li>{{ p }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+{% endblock %}

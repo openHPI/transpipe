@@ -1,0 +1,93 @@
+{% extends "subtitles/base.html" %}
+{% block content %}
+    {% load static %}
+    {% load utils %}
+    <style>
+        .sum {
+            font-weight: bold;
+        }
+    </style>
+
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col">
+                <h1>Service Provider Usage</h1>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <form action="" method="get">
+                    <select class="form-control col-1 mb-1" name="tenant" onchange="this.form.submit()">
+                        <option value="">-- All Tenants --</option>
+                        {% for t in tenants %}
+                            <option value="{{ t.slug }}"
+                                    {% if request.GET.tenant == t.slug %}selected{% endif %}>{{ t.name }}</option>
+                        {% endfor %}
+                    </select>
+                </form>
+                <a href="{% url "mooclink.service_provider_use.getcsv" %}{% if request.GET.tenant %}?tenant={{ request.GET.tenant }}{% endif %}" class="btn btn-primary">Download CSV</a>
+                <table class="table table-sm mt-2">
+                    <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Tenant</th>
+                        <th>Initiator</th>
+                        <th>Item</th>
+                        <th>Provider</th>
+                        <th>Amount</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for w, d in data.items %}
+                        <tr>
+                            <td colspan="4"><strong>{{ w }}</strong></td>
+                        </tr>
+                        {% for spu in d.spu_items %}
+                            <tr>
+                                <td>{{ spu.initiated|date:"Y-m-d H:i" }}</td>
+                                <td>{{ spu.tenant.name }}</td>
+                                <td>
+                                    {% if spu.initiated_by %}
+                                        {{ spu.initiated_by.email }}
+                                    {% else %}
+                                        n/a
+                                    {% endif %}
+                                </td>
+                                <td>{{ spu.video.course_section.course }} / {{ spu.video }} -
+                                    {% if not spu.data.target_language %}
+                                        transcript to {{ spu.data.source_language }}
+                                    {% else %}
+                                        translation {{ spu.data.source_language }} to {{ spu.data.target_language }}
+                                    {% endif %}
+                                </td>
+                                <td>{{ spu.get_service_provider_display }}</td>
+                                <td>
+                                    {{ spu.billable_amount_str }}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td class="sum">
+                                {% for provider, amount in d.billing_data.items %}
+                                    {{ provider.label }}: {{ amount }} |
+                                {% endfor %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+{% endblock %}
+{% block additionaljs %}
+    <script>
+
+    </script>
+{% endblock %}

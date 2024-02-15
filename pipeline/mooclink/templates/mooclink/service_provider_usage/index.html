@@ -1,0 +1,86 @@
+{% extends "subtitles/base.html" %}
+{% block content %}
+    {% load static %}
+    {% load utils %}
+    <style>
+        .sum {
+            font-weight: bold;
+        }
+    </style>
+
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col">
+                <h1>Service Provider Usage</h1>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <form action="" method="get">
+                    <div class="input-group">
+                        <select class="form-control col-1 mb-1" name="tenant" onchange="this.form.submit()">
+                            <option value="">-- All Tenants --</option>
+                            {% for t in tenants %}
+                                <option value="{{ t.slug }}"
+                                        {% if request.GET.tenant == t.slug %}selected{% endif %}>{{ t.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <select class="form-control col-1 mb-1" name="quarter" onchange="this.form.submit()">
+                            <option value="">Last 4 Quarters</option>
+                            {% for quarter in selectable_quarter %}
+                                <option value="{{ quarter }}"{% if quarter_str == quarter %}
+                                        selected{% endif %}>{{ quarter }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                </form>
+                <a href="
+                        {% url "mooclink.service_provider_use.getcsv" %}{% if request.GET.tenant %}?tenant={{ request.GET.tenant }}{% endif %}"
+                   class="btn btn-primary">Download Detailed CSV</a>
+
+
+                {% for quarter, billing_data in data.items %}
+
+                    <h3 class="mt-2">{{ quarter }}</h3>
+                    <table class="table table-sm mt-2">
+                        <thead>
+                        <tr>
+                            <th class="col-2">Tenant</th>
+                            {% for sp in service_provider %}
+                                <th class="col-2">{{ sp.label }}</th>
+                            {% endfor %}
+                            <th class="col-2">Action</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for tenant, items in billing_data.list %}
+                            <tr>
+                                <td>
+                                    <a href="{% url "mooclink.service_provider_use.details" tenant.slug %}">{{ tenant.name }}</a>
+                                </td>
+                                {% for sp in service_provider %}
+                                    <td>{{ items|dict_key:sp|floatformat }} {{ service_provider_units|dict_key:sp }}</td>
+                                {% endfor %}
+                                <td>
+                                    <a href="{% url "mooclink.service_provider_use.getcsv" %}?tenant={{ tenant.slug }}&quarter={{ quarter }}"
+                                       target="_blank"
+                                       class="btn btn-sm btn-primary">
+                                        Download CSV
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block additionaljs %}
+    <script>
+
+    </script>
+{% endblock %}

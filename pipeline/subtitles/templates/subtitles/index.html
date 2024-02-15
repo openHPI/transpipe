@@ -1,0 +1,124 @@
+{% extends "subtitles/base.html" %}
+
+{% block content %}
+    <div class="container-fluid">
+
+    {% if perms.subtitles.add_course %}
+    <form action="{% url 'subtitles:fetch_course' %}" method="post" id="add-course-form">
+        {% csrf_token %}
+    </form>
+    {% endif %}
+
+        <h1>Courses</h1>
+        {% if perms.subtitles.view_course %}
+            <form method="GET">
+                <div class="row">
+                    <div class="col-4">
+                        <div class="input-group">
+                            <input type="text" name="q" class="form-control" placeholder="Search here"
+                                    {% if request.GET.q %} value="{{ request.GET.q }}"{% endif %}>
+                            {% if selectable_tenants.count > 1 %}
+                                <select name="t" class="custom-select col-4" onchange="this.form.submit()">
+                                    <option value="">Select Tenant...</option>
+                                    {% for t in selectable_tenants.all %}
+                                        <option value="{{ t.slug }}"{% if request.GET.t == t.slug %}
+                                                selected{% endif %}>{{ t.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            {% else %}
+                                <select class="custom-select col-4" readonly="readonly" disabled>
+                                    {% for t in request.user.tenants.all %}
+                                        <option value="{{ t.slug }}">{{ t.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            {% endif %}
+                            <div class="input-group-append">
+                                <button class="btn btn-outline-primary" type="submit">Search</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+            {% if course_list %}
+                <table id="courses" class="table">
+                    <thead>
+                    <tr>
+                        <th>Course</th>
+                        <th>Tenant</th>
+                        <th>Course language</th>
+                        <th>Teacher</th>
+                        <th>Start date</th>
+                        <th>Number of videos</th>
+                        <th>Number of published subtitles</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+
+                    {% for course in course_list %}
+                        <tr{% if course.is_skeleton %} class="table-secondary"{% endif %}>
+                            <td>
+                                {% if perms.subtitles.add_course and course.sync_status == 'SKELETON' %}
+                                    <span>{{ course.title }}</span>
+                                    <button form="add-course-form" type="submit" name="add_course" value="{{ course.pk }}" class="btn btn-sm btn-outline-primary">Fetch</button>
+                                {% else %}
+                                    <a href="{% url 'mooclink.course.overview' course.tenant.slug course.ext_id %}">{{ course.title }}</a>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {{ course.tenant.name }}
+                            </td>
+                            <td>{{ course.language }}</td>
+                            <td>{{ course.teacher }}</td>
+                            <td>{{ course.start_date }}</td>
+                            <td>{% if course.is_skeleton %}-{% else %}{{ course.number_of_videos }}{% endif %}</td>
+                            <td>{% if course.is_skeleton %}-{% else %}{{ course.number_of_published_subtitles }} / {{ course.number_of_subtitles }}{% endif %}</td>
+
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                {% if is_paginated %}
+                    <nav aria-label="Page navigation example">
+                        <ul class="pagination justify-content-left">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item"><a class="page-link"
+                                                         href="?page={{ page_obj.previous_page_number }}&{{ query_string }}">&laquo;</a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled"><a class="page-link" href="#"><span>&laquo;</span></a>
+                                </li>
+                            {% endif %}
+                            {% for i in paginator.page_range %}
+                                {% if page_obj.number == i %}
+                                    <li class="page-item active"><a class="page-link" href="#">{{ i }} <span
+                                            class="sr-only">(current)</span></a></li>
+                                {% else %}
+                                    <li class="page-item"><a class="page-link" href="?page={{ i }}&{{ query_string }}">{{ i }}</a></li>
+                                {% endif %}
+                            {% endfor %}
+                            {% if page_obj.has_next %}
+                                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&{{ query_string }}">&raquo;</a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled"><a class="page-link" href="#"><span>&raquo;</span></a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                {% endif %}
+            {% else %}
+                <p>No Courses are available.</p>
+            {% endif %}
+        {% else %}
+            You do not have permission to see the courses.
+        {% endif %}
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            $('#courses').DataTable({searching: false, paging: false, "bInfo": false});
+        });
+    </script>
+
+{% endblock %}

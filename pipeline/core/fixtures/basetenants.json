@@ -1,0 +1,10 @@
+[
+  {
+    "model": "core.tenant",
+    "pk": 1,
+    "fields": {
+      "uuid": "bdbda793-0000-0000-0000-8d238cca4c67",
+      "name": "HPI testtenant"
+    }
+  }
+]

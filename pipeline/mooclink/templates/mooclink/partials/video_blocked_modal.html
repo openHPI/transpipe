@@ -1,0 +1,70 @@
+{% load utils %}
+<div class="modal" id="myModal" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Workflow in progress</h5>
+
+            </div>
+            <div class="modal-body">
+                <p>Please wait until workflow actions are finished.</p>
+                {% if workflow_start_date %}
+                    <p>Workflow started: {{ workflow_start_date }}</p>
+                {% endif %}
+                {% if workflow_duration_exceeded and perms.subtitles.cancel_workflow %}
+                    <form action="{% tenant_url 'mooclink.video.workflow.cancel' tenant=course.tenant video_id=video.id %}" method="post">
+                        {% csrf_token %}
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="yes" name="costs" id="chkbx" required>
+                            <label class="form-check-label" for="chkbx">I accept that canceling and restarting the workflow involves costs.</label>
+                        </div>
+                        <button type="submit" class="btn btn-danger mt-2">Cancel Workflow</button>
+                    </form>
+                {% endif %}
+
+            </div>
+            <div class="modal-footer">
+                <a href="{{ video.platform_link }}" class="btn btn-outline-primary">
+                    Back to {{ tenant.name }}
+                </a>
+                <a href="{% tenant_url 'mooclink.course.overview' course_id=course.ext_id tenant=course.tenant %}"
+                   class="btn btn-secondary">Back</a>
+            </div>
+            {% if request.user.is_superuser and debug_flag %}
+                <form action="{% tenant_url 'mooclink.video.do_action' course_id=course.ext_id video_id=video.ext_id tenant=course.tenant %}"
+                      method="post">
+                    <h4>Debug</h4>
+                    {% csrf_token %}
+                    <button type="submit" name="action" value="mllp_download_subtitle_file"
+                            class="btn btn-outline-danger">
+                        mllp_download_subtitle_file
+                    </button>
+                    <button type="submit" name="action" value="update_mllp_video_status"
+                            class="btn btn-outline-danger">
+                        update_mllp_video_status
+                    </button>
+                    <button type="submit" name="action" value="display_mllp_status"
+                            class="btn btn-outline-danger">
+                        display_mllp_status
+                    </button>
+                    <button type="submit" name="action" value="aws_update_video_status" class="btn btn-outline-danger">
+                        aws_update_video_status
+                    </button>
+                    <button type="submit" name="action" value="aws_download_subtitle_file"
+                            class="btn btn-outline-danger">aws_download_subtitle_file
+                    </button>
+                    <button type="submit" name="action" value="aws_restart_workflow" class="btn btn-outline-danger">
+                        aws_restart_workflow
+                    </button>
+                    <button type="submit" name="action" value="aws_fetch_translation_jobs" class="btn btn-outline-danger">
+                        aws_fetch_translation_jobs
+                    </button>
+                    <select name="subtitle-id">
+                        <option value="{{ transcript.pk }}">{{ transcript }}</option>
+                        <option value="{{ selected_translation.pk }}">{{ selected_translation }}</option>
+                    </select>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+</div>

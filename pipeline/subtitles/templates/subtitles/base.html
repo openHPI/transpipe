@@ -1,0 +1,146 @@
+{% load static %}
+{% load sentry_tags %}
+
+<!DOCTYPE html>
+<html lang="en">
+{% block head %}
+
+<head>
+  {% block title %}<title>TransPipe</title>{% endblock %}
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="shortcut icon" type="image/png" href="{% static 'subtitles/favicon.ico' %}" />
+  <!-- Bootstrap: CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+  <!-- Bootstrap: JS, Popper.js, and jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"
+    integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN"
+    crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"
+    integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV"
+    crossorigin="anonymous"></script>
+  <!-- Ace editor -->
+  <script src="{% static 'subtitles/js/ace.js' %}"></script>
+  <script src="{% static 'subtitles/js/ext-rtl.js' %}"></script>
+  <!-- Sentry -->
+  <script src=" https://browser.sentry-cdn.com/5.20.1/bundle.min.js"
+    integrity="sha384-O8HdAJg1h8RARFowXd2J/r5fIWuinSBtjhwQoPesfVILeXzGpJxvyY/77OaPPXUo"
+    crossorigin="anonymous"></script>
+  <script>
+    Sentry.init({
+      dsn: "https://f15c25fc90494b88aeac4cf89f6ac469@sentry.xikolo.de/39",
+      attachStacktrace: true,
+      release: "{% sentry_release %}",
+      environment: "{% sentry_environment %}",
+    });
+  </script>
+  <!-- DataTables -->
+  <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs4/dt-1.10.21/datatables.min.css" />
+  <script type="text/javascript" src="https://cdn.datatables.net/v/bs4/dt-1.10.21/datatables.min.js"></script>
+  <!-- <script src="{% static 'subtitles/js/datatables.js' %}"></script>
+  <script src="{% static 'subtitles/css/datatables.min.css' %}"></script> -->
+
+<link rel="stylesheet" href="{% static 'subtitles/css/style.css' %}" />
+
+
+  {% if request.user.is_authenticated %}
+  <script>
+    Sentry.configureScope(function (scope) {
+      scope.setUser({
+        "id": "{{request.user.id}}",
+        "username": "{{request.user}}",
+      });
+    });
+  </script>
+  {% endif %}
+
+</head>
+{% endblock %}
+
+<body>
+  {% block navbar %}
+  <nav class="navbar navbar-expand-sm bg-dark navbar-dark">
+    <div class="container-fluid">
+
+      <ul class="nav navbar-nav">
+        <li class="nav-item ">
+          <a class="nav-link" href="{% url 'subtitles:listcourses' %}">TransPipe</a>
+        </li>
+          {% if perms.subtitles.fetch_courses and False %}
+            <li class="nav-item ">
+              <a class="nav-link" href="/subtitles/sync">Sync</a>
+            </li>
+          {% endif %}
+      {% if user.is_authenticated %}
+        <li class="nav-item">
+            <a href="{% url 'subtitles:listcourses' %}" class="nav-link">Courses</a>
+        </li>
+      {% endif %}
+      {% if perms.core.can_see_service_provider_usage %}
+        <li class="nav-item">
+            <a href="{% url 'mooclink.service_provider_use.index' %}" class="nav-link">Service Provider Usage</a>
+        </li>
+      {% endif %}
+      {% if perms.user.see_todo %}
+      <li class="nav-item">
+          <a href="{% url 'mooclink.todo.index' %}" class="nav-link">Tasks</a>
+      </li>
+      {% endif %}
+      </ul>
+      <ul class="navbar-nav ml-auto">
+        {% if request.user.is_authenticated %}
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbardrop" data-toggle="dropdown">
+            {{request.user}} {% if tenant %}({{ tenant.name }}){% endif %} </a>
+          <div class="dropdown-menu dropdown-menu-right">
+            <a class="dropdown-item" href="{% url 'core.profile' %}">Profile</a>
+            <a class="dropdown-item" href="{% url 'password_change' %}">Change Password</a>
+            <a class="dropdown-item" href="{% url 'logout'%}?next={{request.path}}">Logout</a>
+          </div>
+          {% endif %}
+
+      </ul>
+
+    </div>
+
+  </nav>
+  {% if messages %}
+  {% for message in messages %}
+  {% if message.tags == "error"%}
+  <div class="alert alert-warning" role="alert">
+    {{ message }}
+  </div>
+  {% else %}
+  <div class="alert alert-success" role="alert">
+    {{ message }}
+  </div>
+  {% endif %}
+  {% endfor %}
+  {% endif %}
+
+  {% endblock %}
+
+  <div>
+    {% block content %}
+    {% endblock %}
+  </div>
+
+  <div class="footer">
+      <div class="container">
+          <div class="row justify-content-between">
+              <div class="col-2">
+                  Transpipe {% now 'Y' %}
+              </div>
+              <div class="col-2 text-right">
+                  <a href="https://open.hpi.de/pages/imprint" target="_blank">Imprint</a>
+              </div>
+          </div>
+      </div>
+  </div>
+
+</body>
+{% block additionaljs %}{% endblock %}
+</html>

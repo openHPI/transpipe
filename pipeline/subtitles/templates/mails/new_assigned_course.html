@@ -1,0 +1,11 @@
+Hello {{ user.get_full_name }},
+
+you have been assigned the following tasks by {{ request.user.get_full_name }}:
+{% for assignment in assignments %}
+- {{ assignment.subtitle.video }} {{ assignment.subtitle.language }}{% if assignment.subtitle.is_transcript %}transcription{% else %}translation{% endif %}{% endfor %}
+
+You can start working here: {{ url }}
+
+
+Best regards
+transpipe

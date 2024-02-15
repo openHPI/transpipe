@@ -1,0 +1,179 @@
+td {
+    min-width: 100px;
+}
+
+.bordered td {
+    border: 1px solid black;
+}
+
+.td-course-title {
+    font-weight: bold;
+}
+
+.td-section-title {
+    font-weight: bold;
+    padding-left: .5em;
+}
+
+.td-video-title {
+    padding-left: 1em;
+}
+
+.center {
+    text-align: center;
+}
+
+textarea.rtl {
+    direction: rtl
+}
+
+.step-text {
+    text-align: center;
+}
+
+.comment.card::before {
+    content: "";
+    display: block;
+    transform: rotate(-45deg);
+    bottom: -2px;
+    position: absolute;
+    left: -15px;
+    border-radius: 1px;
+    width: 0;
+    height: 0;
+    border-left: 12px solid transparent;
+    border-right: 12px solid transparent;
+    border-top: 12px solid #e9ecef;
+}
+
+.card.comment {
+    border: none;
+    background: #e9ecef;
+    border-bottom-left-radius: 0;
+    padding: 0;
+    margin: 15px 10px 10px 25px;
+    width: calc(100% - 40px);
+}
+
+
+.comment .card-body {
+    padding: 5px 10px;
+}
+
+.comment .card-text {
+    margin: 0;
+}
+
+.custom-control {
+    display: inline;
+    margin: auto 15px;
+}
+
+.custom-control-label {
+    vertical-align: sub;
+}
+
+.vertical-group-top {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    margin-bottom: 0 !important;
+}
+
+.vertical-group-bottom {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    border-top: none;
+    margin-top: 0 !important;
+}
+
+.course-table {
+    max-width: 1000px;
+}
+
+.course-table table td {
+    width: 170px;
+}
+
+.course-table tr > td:first-child {
+    width: auto;
+}
+
+.plyr__controls {
+    flex-direction: column-reverse;
+}
+
+.plyr__progress {
+    width: 100%;
+    margin: 0 10px;
+
+}
+
+.plyr__progress__buffer, .plyr__progress input[type=range] {
+    width: 100%;
+}
+
+.plyr__control-block, .plyr__customized-controls {
+    align-items: center;
+    display: flex;
+    justify-content: flex-end;
+    text-align: center;
+}
+
+.plyr__customized-controls {
+    justify-content: space-between;
+    width: 100%;
+}
+
+.plyr__volume {
+    max-width: unset;
+    min-width: unset;
+    width: 64px;
+}
+
+.plyr__tooltip {
+    z-index: 199;
+}
+
+.ace_gutter-cell {
+    cursor: pointer;
+}
+
+.bg-color-orange {
+    background-color: #E69F00 !important;
+}
+
+.bg-color-light-blue {
+    background-color: #56B4E9 !important;
+}
+
+.bg-color-green {
+    background-color: #009E73 !important;
+    color: white;
+}
+
+.bg-color-yellow {
+    background-color: #F0E442 !important;
+}
+
+.bg-color-blue {
+    background-color: #0072B2 !important;
+    color: white;
+}
+
+.bg-color-dark-orange {
+    background-color: #D55E00 !important;
+    color: white;
+}
+
+.bg-color-pink {
+    background-color: #CC79A7 !important;
+}
+
+.bg-color-dark-grey {
+    background-color: #6c757d !important;
+    color: white;
+}
+
+.user-badges > .badge {
+    border: 2px solid black;
+}

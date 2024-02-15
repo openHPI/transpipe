@@ -1,0 +1,43 @@
+{% extends "subtitles/base.html" %}
+{% block content %}
+    {% load static %}
+    {% load utils %}
+    <link rel="stylesheet" href="{% static 'subtitles/css/mooclink.css' %}">
+
+    <div class="container-fluid">
+        <h1>{{ course.title }}</h1>
+
+        <h2>Add New Language</h2>
+        <div class="row">
+            <form class="col col-6" action="{% tenant_url 'mooclink.course.add_language' course_id=course.ext_id tenant=course.tenant %}"
+                  method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="service-provider">Service Provider</label>
+                    <select name="service-provider" class="form-control" id="service-provider" required disabled>
+                        <option value="">-- Please Select --</option>
+                        {% for translation_service in supported_translation_services %}
+                            <option value="{{ translation_service }}" {% if translation_service == transcription_service %}selected{% endif %}>{{ translation_service }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="language">Language</label>
+                    <select name="language" class="form-control" id="language" required>
+                        <option value="">-- Please Select --</option>
+                        {% for lang in all_languages %}
+                            <option value="{{ lang.iso_code }}">{{ lang }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="mandatory">Mandatory for all videos</label>
+                    <input type="checkbox" class="form-control" name="mandatory" value="yes">
+                </div>
+                <button type="submit" name="action" value="add_language" class="btn btn-primary">Add</button>
+                <a href="{% tenant_url 'mooclink.course.settings' course_id=course.ext_id tenant=course.tenant %}" class="btn btn-secondary">Back</a>
+            </form>
+        </div>
+    </div>
+{% endblock %}

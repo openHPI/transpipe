@@ -1,0 +1,83 @@
+version: '3'
+
+services:
+  postgres:
+    image: postgres:12.3
+    volumes:
+      - transpipe-postgres:/var/lib/postgresql/data
+      - ./import:/docker-entrypoint-initdb.d
+    ports:
+      - 127.0.0.1:5432:5432
+    environment:
+      POSTGRES_USER: django_user
+      POSTGRES_DB: pipeline
+      POSTGRES_PASSWORD: password
+
+#  app:
+#    build: .
+#    entrypoint: /usr/local/bin/python
+#    command: manage.py runserver 0.0.0.0:8000
+#    volumes:
+#    - ./pipeline:/transpipe
+#    ports:
+#      - 8000:8000
+#    environment:
+#      - SQL_HOST=postgres
+#      - DJANGO_SETTINGS_MODULE=pipeline.settings
+#      - DEBUG=True
+
+  celery_beat:
+    build: .
+    entrypoint: celery -A pipeline
+    command: beat --loglevel=INFO
+    volumes:
+      - ./pipeline:/transpipe
+    environment:
+      - SQL_HOST=postgres
+      - DJANGO_SETTINGS_MODULE=pipeline.settings
+      - DEBUG=True
+    depends_on:
+      - redis
+      - rabbitmq
+      - postgres
+
+  celery_worker:
+    build: .
+    entrypoint: celery -A pipeline
+    command: worker --loglevel=INFO --concurrency=2
+    volumes:
+      - ./pipeline:/transpipe
+    environment:
+      - SQL_HOST=postgres
+      - DJANGO_SETTINGS_MODULE=pipeline.settings
+      - DEBUG=True
+    depends_on:
+      - redis
+      - rabbitmq
+      - postgres
+
+  redis:
+    image: redis:latest
+    ports:
+      - 127.0.0.1:6379:6379
+    volumes:
+      - redis-data:/data
+
+  rabbitmq:
+    image: rabbitmq:3.8-management
+    hostname: rabbitmq
+    volumes:
+      - rabbitmq-log:/var/log/rabbitmq
+      - rabbitmq-data:/var/lib/rabbitmq
+    ports:
+      - 127.0.0.1:5672:5672
+      - 127.0.0.1:15672:15672
+    environment:
+      - RABBITMQ_DEFAULT_USER=rabbit
+      - RABBITMQ_DEFAULT_PASS=rabbit
+
+volumes:
+  transpipe-postgres:
+  rabbitmq-log:
+  rabbitmq-data:
+  redis-data:

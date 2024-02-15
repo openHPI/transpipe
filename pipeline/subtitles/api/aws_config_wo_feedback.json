@@ -1,0 +1,140 @@
+{
+  "Name": "MieCompleteWorkflow2",
+  "Configuration": {
+    "defaultPrelimVideoStage2": {
+      "Thumbnail": {
+        "ThumbnailPosition": "10",
+        "MediaType": "Video",
+        "Enabled": true
+      },
+      "Mediainfo": {
+        "MediaType": "Video",
+        "Enabled": true
+      }
+    },
+    "MediaconvertStage2": {
+      "Mediaconvert": {
+        "MediaType": "Video",
+        "Enabled": true
+      }
+    },
+    "CaptionEditingWaitStage": {
+      "Wait": {
+        "MediaType": "MetadataOnly",
+        "Enabled": false
+      }
+    },
+    "CaptionFileStage2": {
+      "WebToSRTCaptions": {
+        "MediaType": "MetadataOnly",
+        "TargetLanguageCodes": [
+          "de",
+          "fr",
+          "en"
+        ],
+        "Enabled": true
+      },
+      "WebToVTTCaptions": {
+        "MediaType": "MetadataOnly",
+        "TargetLanguageCodes": [
+          "de",
+          "fr",
+          "en"
+        ],
+        "Enabled": true
+      }
+    },
+    "WebCaptionsStage2": {
+      "WebCaptions": {
+        "MediaType": "Text",
+        "SourceLanguageCode": "en",
+        "Enabled": true
+      }
+    },
+    "TranslateStage2": {
+      "Translate": {
+        "MediaType": "Text",
+        "Enabled": false
+      },
+      "TranslateWebCaptions": {
+        "MediaType": "Text",
+        "Enabled": true,
+        "TargetLanguageCodes": [
+          "de",
+          "fr"
+        ],
+        "SourceLanguageCode": "en"
+      }
+    },
+    "defaultAudioStage2": {
+      "Transcribe": {
+        "MediaType": "Audio",
+        "Enabled": true,
+        "TranscribeLanguage": "en-US"
+      }
+    },
+    "defaultTextSynthesisStage2": {
+      "Polly": {
+        "MediaType": "Text",
+        "Enabled": false
+      }
+    },
+    "defaultVideoStage2": {
+      "faceDetection": {
+        "MediaType": "Video",
+        "Enabled": false
+      },
+      "textDetection": {
+        "MediaType": "Video",
+        "Enabled": false
+      },
+      "celebrityRecognition": {
+        "MediaType": "Video",
+        "Enabled": false
+      },
+      "GenericDataLookup": {
+        "MediaType": "Video",
+        "Enabled": false
+      },
+      "labelDetection": {
+        "MediaType": "Video",
+        "Enabled": false
+      },
+      "personTracking": {
+        "MediaType": "Video",
+        "Enabled": false
+      },
+      "Mediaconvert": {
+        "MediaType": "Video",
+        "Enabled": false
+      },
+      "contentModeration": {
+        "MediaType": "Video",
+        "Enabled": false
+      },
+      "faceSearch": {
+        "MediaType": "Video",
+        "Enabled": false,
+        "CollectionId": "undefined"
+      }
+    },
+    "defaultTextStage2": {
+      "ComprehendEntities": {
+        "MediaType": "Text",
+        "Enabled": false
+      },
+      "ComprehendKeyPhrases": {
+        "MediaType": "Text",
+        "Enabled": false
+      }
+    }
+  },
+  "Input": {
+    "Media": {
+      "Video": {
+        "S3Bucket": "mie-dataplane-10zkh7erribj9",
+        "S3Key": "137_proxy12345.mp4"
+      }
+    }
+  }
+}

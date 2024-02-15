@@ -1,0 +1,43 @@
+{% extends "subtitles/base.html" %}
+{% block content %}
+    {% load utils %}
+
+    <div class="container-fluid">
+        <div class="jumbotron mt-3">
+            {% if not course %}
+                <h1 class="display-3">Course with ID {{ course_id }} not found</h1>
+                {% if perms.subtitles.add_course %}
+                    <form action="" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary">Fetch from {{ tenant.name }}</button>
+                    </form>
+                {% else %}
+                    <p class="lead">
+                        Please contact an administrator <a href="mailto:openhpi-support@hpi.de">openhpi-support@hpi.de</a> in order to
+                        add this course to transpipe.
+                    </p>
+                {% endif %}
+            {% else %}
+                <h1 class="display-4">Course {{ course.title }}</h1>
+
+                {% if not  video %}
+                    <h2>Video {{ video_id }} not found</h2>
+                    <div>
+                        Please wait for synchronisation.
+                    </div>
+                {% else %}
+                    <h4>Video {{ video.title }}</h4>
+
+                    <p class="lead">
+                        <a href="{% url 'subtitles:video' video.pk %}" class="btn btn-primary">Edit in Transpipe</a>
+                    </p>
+
+                    <p class="lead">
+                        <a href="{% tenant_url 'mooclink.course.overview' course.ext_id tenant=course.tenant %}" class="btn btn-outline-primary">Course Table</a>
+                    </p>
+                {% endif %}
+            {% endif %}
+        </div>
+
+    </div>
+{% endblock %}

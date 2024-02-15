@@ -1,0 +1,235 @@
+{% extends "subtitles/base.html" %}
+{% block content %}
+{% load static %}
+{% load utils %}
+<link rel="stylesheet" href="{% static 'subtitles/css/mooclink.css' %}">
+
+    <div class="container-fluid">
+        <h1 class="mt-2">{{ course.title }}</h1>
+        <div class="form-group row">
+            {% if perms.subtitles.change_settings %}
+                <div class="ml-3">
+                    <a href="{% tenant_url 'mooclink.course.settings' course_id=course.ext_id tenant=course.tenant %}"
+                       class="btn btn-secondary">Settings</a>
+                </div>
+            {% endif %}
+
+            {% if perms.subtitles.synchronize_with_xikolo %}
+                <div class="ml-3">
+                    <form action="{% tenant_url 'mooclink.course.overview' course_id=course.ext_id tenant=course.tenant %}"
+                          method="POST">
+                        {% csrf_token %}
+                        <button class="btn btn-primary" type="submit" data-toggle="tooltip" data-placement="right"
+                                title="Only course structure and available subtitles are fetched from Xikolo if not already present, no push of any information to the platform">
+                            Synchronize with {{ tenant.name }}</button>
+                    </form>
+                </div>
+            {% endif %}
+            <div class="ml-3">
+                <a href="{{ course.platform_link }}" class="btn btn-outline-primary">Go back to {{ tenant.name }}</a>
+
+            </div>
+        </div>
+
+<div class="row m-1">
+    <form action="{% tenant_url 'mooclink.course.subscribe' course_id=course.ext_id tenant=course.tenant %}" method="post" id="form-subscribe">
+        {% csrf_token %}
+    </form>
+
+    <form action="{% tenant_url 'mooclink.course.bulk.confirmation' course_id=course.ext_id tenant=course.tenant %}" method="post" class="col">
+        {% csrf_token %}
+
+        {% if perms.subtitles.can_do_bulk_operations %}
+            <div class="row">
+                <div class="form-group col-3">
+                    <label for="input-action">Action</label>
+                    <div class="input-group">
+                        <select class="form-control" name="action">
+                                <option value="">-- Please Select --</option>
+                            {% if perms.subtitles.bulk_start_workflow %}
+                                <option value="start-workflow"{% if disable_workflow %} disabled{% endif %}>Start Transcription</option>
+                            {% endif %}
+                            {% if perms.subtitles.bulk_start_workflow %}
+                                <option value="start-workflow"{% if disable_workflow %} disabled{% endif %}>Start Translation</option>
+                            {% endif %}
+                            {% if perms.subtitles.bulk_approve %}
+                                <option value="approve">Approve</option>
+                            {% endif %}
+                            {% if perms.subtitles.bulk_publish %}
+                                <option value="publish">Publish</option>
+                            {% endif %}
+                            {% if perms.subtitles.bulk_disapprove %}
+                                <option value="remove-approval">Remove Approval</option>
+                            {% endif %}
+                            {% if perms.subtitles.bulk_delete %}
+                                <option value="delete">Delete</option>
+                            {% endif %}
+                            {% if perms.subtitles.change_settings %}
+                                <option value="remove-assignment">Remove Assignments</option>
+                            {% endif %}
+                        </select>
+                        <div class="input-group-append">
+                            <button class="btn btn-outline-primary" type="submit">GO</button>
+                        </div>
+                    </div>
+                    {% if course in request.user.assigned_courses.all %}
+                        <button type="submit" class="btn btn-outline-danger mt-3" form="form-subscribe" name="action" value="subscribe">
+                            Unsubscribe
+                        </button>
+                    {% else %}
+                        <button type="submit" class="btn btn-primary mt-3" form="form-subscribe" name="action" value="subscribe">
+                            Subscribe
+                        </button>
+                    {% endif %}
+                </div>
+                {% if perms.subtitles.assign_user %}
+                <div class="col-4">
+                    Assign Person
+                    <div class="input-group">
+                        <select class="form-control" name="persons" multiple>
+                            {% for user in selectable_users %}
+                            <option value="{{ user.pk }}">{{ user.get_initials }} {{ user.get_full_name|default:user }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit" class="btn btn-primary" name="action" value="assign_persons">Assign</button>
+                    </div>
+                    <button type="submit" class="btn btn-primary mt-2" name="action" value="notify_persons">Notify Remaining</button>
+                </div>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        <table class="table table-striped table-sm course-table mt-3">
+            <thead class="center">
+            <tr>
+                <th></th>
+                <th>Transcript ({{ transcript_language }})</th>
+                {% for lang in languages %}
+                <th>{{ lang }}</th>
+                {% endfor %}
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td class="td-course-title">{{ course.title }}</td>
+                <td class="center {{ table_header_transcription|get_color }}">
+                    <input type="checkbox" class="js-toggle-checkbox" data-query="js-video-transcript">
+                </td>
+                {% for lang, val in table_header.items %}
+                    <td class="center {{ val|get_color }}">
+                        <input type="checkbox" class="js-toggle-checkbox"
+                           data-query="js-video-with-lang-{{ lang.iso_code }}">
+                    </td>
+                {% endfor %}
+            </tr>
+            {% for section in table_data %}
+                <tr>
+                    <td class="td-section-title">{{ section.course_section }}</td>
+                    <td class="center {{ section.combined_result_transcript|get_color }}">
+                        <input type="checkbox" class="js-toggle-checkbox js-video-transcript"
+                           data-query="js-video-transcript-{{ section.course_section.pk }}">
+                    </td>
+                    {% for lang, res in section.combined_result.items %}
+                        <td class="center {{ res|get_color }}">
+                        <input type="checkbox"
+                           class="js-toggle-checkbox js-video-with-lang-{{ lang.iso_code }}"
+                           data-query="js-video-with-section-{{ lang.iso_code }}-{{ section.course_section.pk }}">
+                        </td>
+                    {% endfor %}
+                </tr>
+                {% for video in section.videos %}
+                    <tr>
+                        <td class="td-video-title">
+                            <a href="{% tenant_url 'mooclink.video.index' course_id=course.ext_id video_id=video.video.ext_id tenant=course.tenant %}">
+                                {{ video.video }}
+                            </a>
+                        </td>
+                        <td class="center {{ video.transcript.1|get_color }}">
+                            <div class="translation-checkbox-wrapper">
+                            <input type="checkbox"
+                                   class="js-video-transcript js-video-transcript-{{ section.course_section.pk }}"
+                                   name="transcripts" value="{{ video.video.pk }}">
+                                <div class="user-badges">
+                                    {% for u in video.transcript.0.active_subtitle_assignments %}
+                                        <span class="badge {% if user == u.user %}badge-danger{% else %}badge-info{% endif %} js-btn-assignment{% if not u.notification_sent %} badge-outlined{% endif %}"
+                                              data-user="{{ u.user.pk }}"
+                                              data-subtitle="{{ video.transcript.0.pk }}">
+                                {{ u.user.get_initials }}
+                                            {% if perms.subtitles.change_settings %}
+                                                x
+                                            {% endif %}
+                            </span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+
+                        </td>
+                        {% for lang, res in video.subtitles.items %}
+                            <td class="center {{ res.1|get_color }}">
+                                <div class="translation-checkbox-wrapper">
+                                    <input type="checkbox"
+                                           class="js-video-with-section-{{ lang.iso_code }}-{{ section.course_section.pk }} js-video-with-lang-{{ lang.iso_code }}"
+                                           name="translations" value="{{ lang.iso_code }}-{{ video.video.pk }}">
+                                    <div class="user-badges">
+                                        {% for u in res.0.active_subtitle_assignments %}
+                                            <span class="badge {% if user == u.user %}badge-danger{% else %}badge-primary{% endif %} js-btn-assignment{% if not u.notification_sent %} badge-outlined{% endif %}"
+                                                  data-user="{{ u.user.pk }}" data-subtitle="{{ res.0.pk }}">
+                                        {{ u.user.get_initials }}
+                                                {% if perms.subtitles.change_settings %}
+                                                    x
+                                                {% endif %}
+                                    </span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+
+            {% endfor %}
+            </tbody>
+        </table>
+    </form>
+</div>
+    {% include 'mooclink/partials/subtitle_legend.html' %}
+</div>
+
+<script type="text/javascript">
+        $(document).ready(function () {
+            $('.js-toggle-checkbox').on('click', function (e) {
+                let query = $(this).data('query')
+                $('.' + query).prop('checked', $(this).prop('checked'))
+            })
+
+            $(function () {
+                $('[data-toggle="tooltip"]').tooltip()
+            })
+
+            {% if perms.subtitles.change_settings %}
+            $('.js-btn-assignment').on('click', function(e) {
+                if ($(this).data('action') === 'delete') {
+
+                    let el = $(this)
+
+                    jQuery.ajax({
+                        url: '{% url 'mooclink.course.remove_assignment' course.tenant.slug course.ext_id %}',
+                        type: 'POST',
+                        data: {
+                            user_id: $(this).data('user'),
+                            subtitle_id: $(this).data('subtitle'),
+                            csrfmiddlewaretoken: document.querySelector('[name=csrfmiddlewaretoken]').value
+                        },
+                        success: function(data, textStatus, jqXHR) {
+                            el.remove()
+                        }
+                    })
+                } else {
+                    $(this).removeClass(['badge', 'badge-info']).addClass('btn btn-danger').addClass('btn-sm').data('action', 'delete')
+                }
+            })
+            {% endif %}
+        })
+</script>
+{% endblock %}

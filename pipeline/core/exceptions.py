@@ -1,0 +1,2 @@
+class SecretNotFound(KeyError):
+    pass
