@@ -1,4 +1,4 @@
-FROM python:3.8
+FROM python:3.9
 MAINTAINER openHPI Team <openhpi-info@hpi.de>
 
 # Install dependencies for opencv
