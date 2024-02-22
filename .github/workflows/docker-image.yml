@@ -24,7 +24,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: my-docker-hub-namespace/my-docker-hub-repository
+          images: openhpi/transpipe
           tags: |
             type=ref,event=branch
             type=ref,event=pr
