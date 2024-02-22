@@ -27,7 +27,6 @@ jobs:
           images: openhpi/transpipe
           tags: |
             type=raw,value=latest
-            type=schedule,pattern={{date 'YYYYMMDD'}}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
