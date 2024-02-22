@@ -32,7 +32,6 @@ jobs:
             type=ref,event=pr
             type=edge,enable=true,priority=700,prefix=,suffix=,branch=$repo.default_branch
 
-
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
