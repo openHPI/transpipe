@@ -4,27 +4,7 @@
 # https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
 
 version: 2
-updates:
-  - package-ecosystem: pip
-    directory: "/"
-    schedule:
-      interval: daily
-      time: "03:00"
-      timezone: UTC
-    labels:
-      - dependencies
-      - python
-
-  - package-ecosystem: docker
-    directory: "/"
-    schedule:
-      interval: daily
-      time: "03:00"
-      timezone: UTC
-    labels:
-      - dependencies
-      - docker
-  
+updates: 
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
