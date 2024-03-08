@@ -26,35 +26,35 @@ services:
 #      - DJANGO_SETTINGS_MODULE=pipeline.settings
 #      - DEBUG=True
 
-  celery_beat:
-    build: .
-    entrypoint: celery -A pipeline
-    command: beat --loglevel=INFO
-    volumes:
-      - ./pipeline:/transpipe
-    environment:
-      - SQL_HOST=postgres
-      - DJANGO_SETTINGS_MODULE=pipeline.settings
-      - DEBUG=True
-    depends_on:
-      - redis
-      - rabbitmq
-      - postgres
-
-  celery_worker:
-    build: .
-    entrypoint: celery -A pipeline
-    command: worker --loglevel=INFO --concurrency=2
-    volumes:
-      - ./pipeline:/transpipe
-    environment:
-      - SQL_HOST=postgres
-      - DJANGO_SETTINGS_MODULE=pipeline.settings
-      - DEBUG=True
-    depends_on:
-      - redis
-      - rabbitmq
-      - postgres
+#  celery_beat:
+#    build: .
+#    entrypoint: celery -A pipeline
+#    command: beat --loglevel=INFO
+#    volumes:
+#      - ./pipeline:/transpipe
+#    environment:
+#      - SQL_HOST=postgres
+#      - DJANGO_SETTINGS_MODULE=pipeline.settings
+#      - DEBUG=True
+#    depends_on:
+#      - redis
+#      - rabbitmq
+#      - postgres
+#
+#  celery_worker:
+#    build: .
+#    entrypoint: celery -A pipeline
+#    command: worker --loglevel=INFO --concurrency=2
+#    volumes:
+#      - ./pipeline:/transpipe
+#    environment:
+#      - SQL_HOST=postgres
+#      - DJANGO_SETTINGS_MODULE=pipeline.settings
+#      - DEBUG=True
+#    depends_on:
+#      - redis
+#      - rabbitmq
+#      - postgres
 
   redis:
     image: redis:latest

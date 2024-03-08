@@ -89,7 +89,7 @@ DATABASES = {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
         "NAME": os.environ.get("SQL_DATABASE", "pipeline"),
         "USER": os.environ.get("SQL_USER", "django_user"),
-        "PASSWORD": os.environ.get("SQL_PASSWORD", "xmg99dzWEX8qUUi"),
+        "PASSWORD": os.environ.get("SQL_PASSWORD", "password"),
         "HOST": os.environ.get("SQL_HOST", "localhost"),
         "PORT": os.environ.get("SQL_PORT", "5432"),
         "CONN_MAX_AGE": None,  # Use persistent database connections
@@ -199,3 +199,8 @@ CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', f"amqp://rabbit:rabbit@r
 CELERY_TASK_REJECT_ON_WORKER_LOST = True
 CELERY_TASK_ACKS_LATE = True
 CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
+
+DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
+
+if csrf_trusted_origins_env := os.environ.get("CSRF_TRUSTED_ORIGINS"):
+    CSRF_TRUSTED_ORIGINS = [s.strip() for s in csrf_trusted_origins_env.split(",")]
