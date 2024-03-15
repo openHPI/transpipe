@@ -323,7 +323,7 @@ def aws_update_transcription_only(video):
         video.workflow_status = None
 
         if periodic_task_id := video.workflow_data.get('periodic_task_id'):
-            PeriodicTask.objects.get(pk=periodic_task_id).delete()
+            PeriodicTask.objects.filter(pk=periodic_task_id).delete()
             video.workflow_data['cleared'] = True
 
         video.save()
@@ -400,7 +400,7 @@ def aws_update_transcription_only(video):
             video.workflow_data['finished'] = str(timezone.now())
 
             if periodic_task_id := video.workflow_data.get('periodic_task_id'):
-                PeriodicTask.objects.get(pk=periodic_task_id).delete()
+                PeriodicTask.objects.filter(pk=periodic_task_id).delete()
                 video.workflow_data['cleared'] = True
 
             video.save()
@@ -544,7 +544,7 @@ def aws_update_video_status(video, video_id=None):
         with transaction.atomic():
             video.workflow_status = None
             if periodic_task_id := video.workflow_data.get('periodic_task_id'):
-                PeriodicTask.objects.get(pk=periodic_task_id).delete()
+                PeriodicTask.objects.filter(pk=periodic_task_id).delete()
                 video.workflow_data['cleared'] = True
 
             video.save()

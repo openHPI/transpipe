@@ -9,6 +9,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMix
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import redirect
 from django.urls import reverse
+from django.utils.text import slugify
 from django_celery_beat.models import IntervalSchedule, PeriodicTask
 
 from core.models import Tenant
@@ -142,6 +143,12 @@ class SubtitleToAction(LoginRequiredMixin, PermissionRequiredMixin, views.View):
             subtitle.save()
         elif action == 'publish':
             publish_subtitle_to_xikolo(request, subtitle.id)
+        elif action == "download_vtt":
+            safe_title = slugify(video.title)
+            response = HttpResponse(subtitle.latest_content, content_type="text/vtt")
+            response["Content-Disposition"] = f"attachment; filename=subtitle_{subtitle.id}_{safe_title}_{subtitle.language.iso_code}.vtt"
+
+            return response
         elif action == 'restart_workflow':
             if subtitle and not subtitle.is_transcript:
                 assigned_language = course.assignedlanguage_set.filter(iso_language__iso_code=request.POST['language'])\

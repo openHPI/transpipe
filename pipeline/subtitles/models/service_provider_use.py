@@ -20,6 +20,8 @@ class ServiceProviderUse(models.Model):
         AWS_TRANSLATION = "AWS_TRANSLATION", _("AWS Translation")
         DEEPL = "DEEPL", _("DEEPL")
 
+        AUDESCRIBE_TRANSCRIPTION = "AUDESCRIBE_TRANSCRIPTION", _("Audescribe Transcription")
+
         OTHER = "OTHER", _("Other")
 
     service_provider = models.CharField(max_length=128, db_index=True, choices=ServiceProvider.choices,

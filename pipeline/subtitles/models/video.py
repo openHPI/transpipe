@@ -2,6 +2,7 @@ import json
 from datetime import datetime, timedelta
 
 import celery
+from dateutil.parser import parse
 from django.db import models
 from django.db.models import Q
 from django.utils.functional import cached_property
@@ -187,6 +188,13 @@ class Video(models.Model):
     @property
     def is_workflow_in_progress(self):
         return self.workflow_status in {'AWS_INITIATED', 'MLLP_INITIATED'}
+
+    @property
+    def job_initiated(self):
+        try:
+            return parse(self.workflow_data["initiated"])
+        except Exception:
+            return "n/a"
 
     def __str__(self):
         return self.title

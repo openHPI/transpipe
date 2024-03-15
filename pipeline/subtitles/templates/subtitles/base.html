@@ -89,6 +89,11 @@
           <a href="{% url 'mooclink.todo.index' %}" class="nav-link">Tasks</a>
       </li>
       {% endif %}
+      {% if user.is_superuser %}
+      <li class="nav-item">
+          <a href="{% url "mooclink.jobs.index" %}" class="nav-link">Jobs</a>
+      </li>
+      {% endif %}
       </ul>
       <ul class="navbar-nav ml-auto">
         {% if request.user.is_authenticated %}

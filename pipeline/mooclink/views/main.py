@@ -1,9 +1,13 @@
+import json
+
 from django import views
 from django.contrib import messages
 from django.contrib.auth.mixins import PermissionRequiredMixin, LoginRequiredMixin
 from django.core.exceptions import SuspiciousOperation
-from django.http import HttpRequest
+from django.db import transaction
+from django.http import HttpRequest, HttpResponseForbidden
 from django.shortcuts import render, redirect
+from django_celery_beat.models import PeriodicTask
 
 from core.models import Tenant
 from subtitles.api.xikolo_api import get_xikolo_course_sections_and_videos, update_video_detail, get_xikolo_course
@@ -29,7 +33,7 @@ class MainView(PermissionRequiredMixin, LoginRequiredMixin, views.View):
 
         video = None
 
-        course = Course.objects.filter(tenant=tenant, ext_id=course_id).exclude(sync_status=SyncStatusChoices.SKELETON)\
+        course = Course.objects.filter(tenant=tenant, ext_id=course_id).exclude(sync_status=SyncStatusChoices.SKELETON) \
             .first()
 
         if not course:
@@ -86,9 +90,8 @@ class MainViewCourse(PermissionRequiredMixin, LoginRequiredMixin, views.View):
         tenant = Tenant.objects.get(slug=tenant_slug)
         course = None
 
-        course = Course.objects.filter(tenant=tenant, ext_id=course_id).exclude(sync_status=SyncStatusChoices.SKELETON)\
+        course = Course.objects.filter(tenant=tenant, ext_id=course_id).exclude(sync_status=SyncStatusChoices.SKELETON) \
             .first()
-
 
         if course:
             return redirect('mooclink.course.overview', tenant_slug, course.ext_id)
@@ -136,9 +139,87 @@ class RedirectByItemId(PermissionRequiredMixin, LoginRequiredMixin, views.View):
         if 'video_id' in request.GET:
             video = Video.objects.get(pk=request.GET['video_id'])
 
-            return redirect('mooclink.video.index', video.tenant.slug, video.ext_id)
+            return redirect('mooclink.video.index', video.tenant.slug, video.course_section.course.ext_id, video.ext_id)
 
         if 'course_id' in request.GET:
             course = Course.objects.get(pk=request.GET['course_id'])
 
             return redirect('mooclink.course.overview', course.tenant.slug, course.ext_id)
+
+
+class JobAdminView(LoginRequiredMixin, views.View):
+    def get(self, request: HttpRequest):
+        if not request.user.is_superuser:
+            return HttpResponseForbidden("Only superusers may see this page.")
+
+        pending_videos = (
+            Video.objects.exclude(workflow_status=None)
+            .exclude(workflow_status="")
+            .exclude(workflow_status__isnull=True)
+            .order_by("-id")
+        )
+
+        pending_ids = {pv.id for pv in pending_videos.all()}
+
+        orphaned_periodic_tasks = (
+            PeriodicTask.objects
+            .filter(task__startswith="core.tasks")
+            .order_by("-id")
+        )
+
+        orphaned_periodic_tasks_view = []
+
+        for orphaned in orphaned_periodic_tasks:
+            kwargs = json.loads(orphaned.kwargs)
+            video_id = kwargs.get("video_id", -1)
+
+            if video_id not in pending_ids:
+                orphaned_periodic_tasks_view.append({
+                    "task": orphaned,
+                    "video": Video.objects.filter(pk=kwargs.get("video_id", -1)).first(),
+                })
+
+        print(orphaned_periodic_tasks_view)
+
+        return render(request, "mooclink/admin/job_view.html", {
+            "pending_videos": pending_videos,
+            "orphaned_tasks": orphaned_periodic_tasks_view,
+        })
+
+
+class JobAdminResetView(LoginRequiredMixin, views.View):
+    def post(self, request: HttpRequest):
+        if not request.user.is_superuser:
+            return HttpResponseForbidden("Only superusers may see this page.")
+
+        if "video_id" in request.POST:
+            video = Video.objects.get(pk=request.POST["video_id"])
+
+            with transaction.atomic():
+                video.workflow_status = ""
+
+                old_wf = video.workflow_data
+                video.workflow_data = {
+                    "_old": old_wf,
+                }
+                video.save()
+
+                if periodic_task_id := old_wf.get("periodic_task_id"):
+                    PeriodicTask.objects.filter(pk=periodic_task_id).delete()
+
+                pds = PeriodicTask.objects.filter(name__endswith=f"for video={video.pk}")
+
+                if pds.count():
+                    messages.info(request, f"Found orphaned periodic tasks {[pd.pk for pd in pds.all()]}")
+
+                    pds.delete()
+
+            messages.success(request, f"Video {video.title} reset.")
+
+        elif "periodic_task_id" in request.POST:
+            periodic_task_id = request.POST["periodic_task_id"]
+            PeriodicTask.objects.filter(pk=periodic_task_id).delete()
+
+            messages.success(request, f"Task {periodic_task_id} deleted.")
+
+        return redirect("mooclink.jobs.index")

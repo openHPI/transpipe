@@ -21,6 +21,7 @@ class Tenant(models.Model):
     aws_active = models.BooleanField(default=True)
     mllp_active = models.BooleanField(default=True)
     deepl_active = models.BooleanField(default=False)
+    audescribe_active = models.BooleanField(default=False)
 
     def get_secret(self, key, raise_exception=True, default=None):
         if key in self.secrets:
@@ -56,6 +57,9 @@ class Tenant(models.Model):
 
         if self.deepl_active:
             l.append(Subtitle.Origin.DEEPL)
+
+        if self.audescribe_active:
+            l.append(Subtitle.Origin.AUDESCRIBE)
 
         l.append(TranslationService.MANUAL)
 

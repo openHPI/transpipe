@@ -305,9 +305,10 @@ class FetchFromXikolo(LoginRequiredMixin, PermissionRequiredMixin, views.View):
         can_user_view_video(request, video, raise_ex=True)
 
         is_transcript = video.original_language == language
-        try:
-            subtitle = video.subtitle_set.filter(language=language).order_by('-last_update').first()
-        except Subtitle.DoesNotExist:
+
+        subtitle = video.subtitle_set.filter(language=language).order_by('-last_update').first()
+
+        if subtitle is None:
             subtitle = Subtitle(
                 status=Subtitle.SubtitleStatus.AUTO_GENERATED,
                 origin=Subtitle.Origin.MOOC,
@@ -343,7 +344,7 @@ class CancelWorkflowView(LoginRequiredMixin, PermissionRequiredMixin, views.View
 
         video.workflow_status = None
         if periodic_task_id := video.workflow_data.get('periodic_task_id'):
-            PeriodicTask.objects.get(pk=periodic_task_id).delete()
+            PeriodicTask.objects.filter(pk=periodic_task_id).delete()
             video.workflow_data['cleared'] = True
             video.workflow_data['cleared_reason'] = "Manual Cancellation"
 

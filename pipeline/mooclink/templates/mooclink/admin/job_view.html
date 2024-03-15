@@ -1,0 +1,72 @@
+{% extends "subtitles/base.html" %}
+{% block content %}
+    {% load static %}
+    {% load utils %}
+    <link rel="stylesheet" href="{% static 'subtitles/css/mooclink.css' %}">
+
+    <div class="container-fluid">
+        <h1>Pending Videos</h1>
+
+        <table class="table table-sm">
+            <thead>
+            <tr>
+                <th>Video</th>
+                <th>Service</th>
+                <th>Started</th>
+                <th>Action</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for video in pending_videos %}
+                <tr>
+                    <td>
+                        <a href="{% tenant_url 'mooclink.video.index' course_id=video.course_section.course.ext_id video_id=video.ext_id tenant=video.tenant %}" target="_blank">
+                            {{ video }}
+                        </a>
+                    </td>
+                    <td>{{ video.workflow_status }}</td>
+                    <td>{{ video.job_initiated }}</td>
+                    <td>
+                        <button form="cancellation-form" type="submit" name="video_id" value="{{ video.id }}"
+                                class="btn btn-danger btn-sm"
+                                onclick="confirm('Please confirm the cancellation of job for video `{{ video }}`')">
+                            Cancel
+                        </button>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+        <h2>Orphaned Periodic Tasks</h2>
+        <table class="table table-sm">
+            <thead>
+            <tr>
+                <th>Video</th>
+                <th>Started</th>
+                <th>Action</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for orphaned in orphaned_tasks %}
+                <tr>
+                    <td>
+                        <a href="{% tenant_url 'mooclink.video.index' course_id=orphaned.video.course_section.course.ext_id video_id=orphaned.video.ext_id tenant=orphaned.video.tenant %}" target="_blank">
+                            {{ orphaned.video }}
+                        </a>
+                    </td>
+                    <td>{{ orphaned.task.start_time }}</td>
+                    <td>
+                        <button type="submit" class="btn btn-sm btn-danger" name="periodic_task_id"
+                                value="{{ orphaned.task.pk }}" form="cancellation-form">Cancel
+                        </button>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <form action="{% url "mooclink.jobs.reset" %}" method="post" id="cancellation-form">
+        {% csrf_token %}
+    </form>
+{% endblock %}

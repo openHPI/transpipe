@@ -31,6 +31,7 @@ class Subtitle(models.Model):
         MLLP = "MLLP", _("MLLP")
         AWS = "AWS", _("AWS")
         DEEPL = "DEEPL", _("DEEPL")
+        AUDESCRIBE = "AUDESCR", _("AUDESCRIBE")
         MANUAL_UPLOAD = "MANU", _("Manual upload")
         MOOC = "MOOC", _("Downloaded from MOOC platform")
 

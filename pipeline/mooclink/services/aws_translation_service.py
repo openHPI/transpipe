@@ -176,7 +176,7 @@ class AwsTranslationService:
         if len(video.workflow_data['waiting_job_ids']) == 0:
             video.workflow_status = None
             if periodic_task_id := video.workflow_data.get('periodic_task_id'):
-                PeriodicTask.objects.get(pk=periodic_task_id).delete()
+                PeriodicTask.objects.filter(pk=periodic_task_id).delete()
                 video.workflow_data['cleared'] = True
 
         video.save()

@@ -2,7 +2,7 @@ from django.urls import path
 
 from mooclink.views.course import CourseOverView, CourseSettingsView, CourseAddLanguageView, RemoveUserAssignment
 from mooclink.views.couse_video_bulkaction import CourseBulkActionConfirmation, CourseDoBulkAction, CourseSubscribe
-from mooclink.views.main import MainView, MainViewCourse, RedirectByItemId
+from mooclink.views.main import MainView, MainViewCourse, RedirectByItemId, JobAdminView, JobAdminResetView
 from mooclink.views.service_provider_usage import ServiceProviderUsage, TodoView, ServiceProviderUsageCSV, \
     ServiceProviderUsageQuarter
 from mooclink.views.subtitle_action import SubtitleToAction
@@ -37,4 +37,7 @@ urlpatterns = [
 
     # Endpoint for redirecting to course / video by primary-key. Allowed only for admins
     path('debug/get_item/', RedirectByItemId.as_view()),
+
+    path('jobs/', JobAdminView.as_view(), name="mooclink.jobs.index"),
+    path('jobs/reset/', JobAdminResetView.as_view(), name="mooclink.jobs.reset"),
 ]

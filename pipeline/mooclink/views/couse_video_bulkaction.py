@@ -1,7 +1,9 @@
+import io
 import itertools
-import json
+import zipfile
 from datetime import datetime, timedelta
 from operator import itemgetter
+from zipfile import ZipFile
 
 from django import views
 from django.conf import settings
@@ -9,16 +11,18 @@ from django.contrib import messages
 from django.contrib.auth.mixins import PermissionRequiredMixin, LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
+from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
-from django_celery_beat.models import IntervalSchedule, PeriodicTask
+from django.utils.text import slugify
+from django_celery_beat.models import IntervalSchedule
 
-from core.exceptions import SecretNotFound
 from core.models import Tenant, TranspipeUser
 from mooclink.services.aws_translation_service import AwsTranslationService
 from mooclink.services.deepl_translation_service import DeeplTranslationService
+from mooclink.services.periodic_task_service import PeriodicTaskService
 from subtitles.api.xikolo_api import publish_subtitle_to_xikolo
 from subtitles.models import Course, Video, IsoLanguage, Subtitle, SubtitleAssignment, AssignedLanguage
 from subtitles.models.translation_service import TranslationService
@@ -274,19 +278,27 @@ class CourseDoBulkAction(PermissionRequiredMixin, LoginRequiredMixin, views.View
                             period=IntervalSchedule.MINUTES,
                         )
 
-                        periodic = PeriodicTask.objects.create(
-                            interval=schedule,
-                            name=f'Check AWS StandaloneTranslation for video={video.pk}',
-                            task='core.tasks.task_update_aws_standalone_translation_status',
+                        # periodic = PeriodicTask.objects.create(
+                        #     interval=schedule,
+                        #     name=f'Check AWS StandaloneTranslation for video={video.pk}',
+                        #     task='core.tasks.task_update_aws_standalone_translation_status',
+                        #     start_time=datetime.now() + timedelta(minutes=15),
+                        #     kwargs=json.dumps({
+                        #         'tenant_id': video.tenant_id,
+                        #         'video_id': video.pk,
+                        #     })
+                        # )
+
+                        periodic = PeriodicTaskService.create_periodic_task(
+                            service_type="core.tasks.task_update_aws_standalone_translation_status",
+                            task="core.tasks.task_update_aws_standalone_translation_status",
+                            video=video,
                             start_time=datetime.now() + timedelta(minutes=15),
-                            kwargs=json.dumps({
-                                'tenant_id': video.tenant_id,
-                                'video_id': video.pk,
-                            })
                         )
 
                         video.workflow_data['type'] = 'AWS_TRANSLATION_S_v1'
-                        video.workflow_data['periodic_task_id'] = periodic.pk
+                        if periodic:
+                            video.workflow_data['periodic_task_id'] = periodic.pk
                         video.workflow_data['initiated'] = str(datetime.utcnow())
                         video.save()
 
@@ -385,6 +397,32 @@ class CourseDoBulkAction(PermissionRequiredMixin, LoginRequiredMixin, views.View
                     SubtitleAssignment.objects.filter(subtitle=subtitle).update(deleted=timezone.now())
 
                     number_of_affected += 1
+        elif action == "download-vtt-files":
+            buffer = io.BytesIO()
+            zip_file = ZipFile(buffer, mode="w", compression=zipfile.ZIP_LZMA)
+
+            for video in videos_to_transcript:
+                with zip_file.open(f"{video.index:02d}_{slugify(video.title)}_{video.original_language.iso_code}.vtt", "w") as f:
+                    if video.current_transcript:
+                        f.write(video.current_transcript.latest_content.encode("utf-8"))
+
+            for (language, video) in videos_to_translate:
+                subtitle = video.subtitle_set.filter(language=language).first()
+
+                if not subtitle:
+                    continue
+
+                with zip_file.open(f"{video.index:02d}_{slugify(video.title)}_{subtitle.language.iso_code}.vtt", "w") as f:
+                    if video.current_transcript:
+                        f.write(subtitle.latest_content.encode("utf-8"))
+
+            zip_file.close()
+
+            response = HttpResponse(buffer.getvalue())
+            response['Content-Type'] = 'application/x-zip-compressed'
+            response['Content-Disposition'] = f'attachment; filename=subtitles_{slugify(course.title)}.zip'
+
+            return response
 
         else:
             messages.error(request, f"Action {action} not available")

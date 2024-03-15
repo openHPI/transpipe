@@ -52,6 +52,8 @@ class ServiceProviderUsageQuarter(LoginRequiredMixin, views.View):
                         i.billed_minutes for i in l if i.service_provider == ServiceProviderUse.ServiceProvider.MLLP),
                     ServiceProviderUse.ServiceProvider.AWS_TRANSLATION: sum(i.billed_characters for i in l if
                                                                             i.service_provider == ServiceProviderUse.ServiceProvider.AWS_TRANSLATION),
+                    ServiceProviderUse.ServiceProvider.DEEPL: sum(i.billed_characters for i in l if
+                                                                            i.service_provider == ServiceProviderUse.ServiceProvider.DEEPL),
                 }
 
                 data[f"{year}Q{quarter}"]["list"].append(
@@ -72,11 +74,13 @@ class ServiceProviderUsageQuarter(LoginRequiredMixin, views.View):
                 ServiceProviderUse.ServiceProvider.AWS_TRANSCRIPTION,
                 ServiceProviderUse.ServiceProvider.AWS_TRANSLATION,
                 ServiceProviderUse.ServiceProvider.MLLP,
+                ServiceProviderUse.ServiceProvider.DEEPL,
             ],
             "service_provider_units": {
                 ServiceProviderUse.ServiceProvider.AWS_TRANSCRIPTION: "minutes",
                 ServiceProviderUse.ServiceProvider.AWS_TRANSLATION: "characters",
                 ServiceProviderUse.ServiceProvider.MLLP: "minutes",
+                ServiceProviderUse.ServiceProvider.DEEPL: "characters",
             },
             'tenants': request.user.tenants.all(),
             "selectable_quarter": [f"{q['year']}Q{q['quarter']}" for q in selectable_quarter],
